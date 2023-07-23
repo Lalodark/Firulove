@@ -1,0 +1,8 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "Firulove",
+	"webDir": "build",
+	"server": {
+		"androidScheme": "https"
+	}
+}
