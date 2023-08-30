@@ -1,0 +1,72 @@
+ion-content.background{
+    --background: none;
+    background-image: url('../images/splashfirulove.jpeg');
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+ion-img.logo{
+    width: 90%;
+    height: 90%;
+    position: absolute;
+    left: 5%;
+    bottom: 32%;
+}
+
+h1{
+    text-align: center;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 36px;
+    padding-bottom: 20px;
+}
+
+.letra{
+    position: fixed;
+    margin: auto;
+    top: -10%;
+    left: 0%;
+    right: 0;
+    bottom: 0;
+}
+ 
+.con-input{
+    position: absolute;
+    bottom: 25%;
+    width: 95%;
+    left: 2.5%;
+    justify-content: center;
+}
+
+.loginput{
+    --background: #373737;
+    --color: #fff;
+    --placeholder-color: #ddd;
+    --placeholder-opacity: .8;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 8px 0;
+    display: inline-block;
+}
+
+.con-bttn{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    position: absolute;
+    bottom: 5%;
+    width: 95%;
+    left: 2.5%;
+    justify-content: center;
+}
+
+.error-message{
+    color:red;
+}
+
+.success-message{
+    color:green;
+}
+
+

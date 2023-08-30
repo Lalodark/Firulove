@@ -1,0 +1,41 @@
+.btn{
+    margin-top: 20px;
+    margin-bottom: 20px;
+    
+}
+
+ion-content.background{
+    --background: none;
+    background-image: url('../images/splashfirulove.jpeg');
+    background-position: center top;
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+ 
+ion-img.logo{
+    width: 90%;
+    height: 90%;
+    position: absolute;
+    left: 5%;
+    bottom: 32%;
+}
+
+.letra{
+    position: fixed;
+    margin: auto;
+    top: -10%;
+    left: 0%;
+    right: 0;
+    bottom: 0;
+}
+
+.container-but{
+    position: absolute;
+    bottom: 8%;
+    width: 95%;
+}
+ 
+.botones{
+    display: flex;
+    justify-content: center;
+}
