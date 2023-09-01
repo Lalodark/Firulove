@@ -1,0 +1,29 @@
+.footer{
+    position: fixed;
+    bottom: 0;
+}
+
+.chat-message {
+    padding: 10px;
+    border-radius: 10px;
+    margin: 5px;
+  }
+  
+  /* Estilo para los mensajes enviados */
+  .sent {
+    --ion-background-color:#007aff;
+    color: white; /* Color del texto para mensajes enviados */
+    align-self: flex-end; /* Alinea a la derecha */
+  }
+  
+  /* Estilo para los mensajes recibidos */
+  .received {
+    --ion-background-color:#f4f4f4;
+    color: #333; /* Color del texto para mensajes recibidos */
+    align-self: flex-start; /* Alinea a la izquierda */
+  }
+
+  .chat{
+    --border-color: #555;
+    --border-width: 0.5px;
+  }

@@ -145,21 +145,8 @@ const Chats: React.FC = () => {
       </IonContent>
 
       <IonModal ref={modal3} isOpen={mostrarModalcf} onDidDismiss={cerrarModalcf}>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton onClick={() => modal3.current?.dismiss()}>Cancelar</IonButton>
-              </IonButtons>
-              <IonTitle>Filtros</IonTitle>
-              <IonButtons slot="end">
-                <IonButton strong={true} onClick={() => confirm()}>
-                  Aplicar
-                </IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <Filtros></Filtros>
-        </IonModal>
+          <Filtros onClose={cerrarModalcf}></Filtros>
+      </IonModal>
 
 
         <IonModal ref={modal4} isOpen={mostrarModalcp} onDidDismiss={cerrarModalcp}>

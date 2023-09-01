@@ -1,5 +1,5 @@
 import React from 'react';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import {
   IonApp,
   IonRouterOutlet,
@@ -14,6 +14,7 @@ import Register from './components/Register';
 import Mascotas from './components/Mascotas'
 import Chats from './components/Chats';
 import Mascotas_CE from './components/Mascotas_CE'
+import Chat_Personal from './components/Chat_Personal';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -52,7 +53,7 @@ const App: React.FC = () => (
           <Route path="/menu">
             <Menu />
           </Route>
-          <Route path="/mascotas">
+          <Route exact path="/mascotas">
             <Mascotas />
           </Route>
           <Route path="/Chats">
@@ -62,7 +63,10 @@ const App: React.FC = () => (
             <Redirect to="/landing"/>
           </Route>
           <Route path="/mascotas/create">
-            <Mascotas_CE />
+              <Mascotas_CE />
+          </Route>
+          <Route path='/Chats/chat'>
+            <Chat_Personal />
           </Route>
         </IonRouterOutlet>
     </IonReactRouter>

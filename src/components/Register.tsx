@@ -45,7 +45,8 @@ const Register: React.FC = () => {
         nombre:nombre,
         apellido:apellido,
         fecha:formatDate(fecha),
-        email:email
+        email:email,
+        activepet:''
       }
       try{
         const data = await store.collection('usuarios').add(usuario)

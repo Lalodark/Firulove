@@ -5,7 +5,6 @@ import TinderCard from 'react-tinder-card'
 import {auth, store} from '../firebase'
 import logo from '../images/logofirulove2.png'
 import './Menu.css'
-import { OverlayEventDetail } from '@ionic/core/components';
 import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, heartSharp, closeSharp } from 'ionicons/icons';
 
 import Filtros from './Filtros';
@@ -59,6 +58,8 @@ const Menu: React.FC = () => {
     nombre: '',
     apellido: '',
     email: '',
+    id:'',
+    activepet:''
   });
 
   const swiped = (direction:string, nameToDelete:string) => {
@@ -72,15 +73,6 @@ const Menu: React.FC = () => {
 
   const modal1 = useRef<HTMLIonModalElement>(null);
   const modal2 = useRef<HTMLIonModalElement>(null);
-  const input = useRef<HTMLIonInputElement>(null);
-
-  // const [message, setMessage] = useState(
-  //   'This modal example uses triggers to automatically open a modal when the button is clicked.'
-  // );
-
-  function confirm() {
-    modal1.current?.dismiss(input.current?.value, 'confirm');
-  }
 
 
   const [mostrarModalmf, setMostrarModalmf] = useState(false);
@@ -103,26 +95,73 @@ const Menu: React.FC = () => {
   };
 
   useEffect(() => {
+
+    const traerMascotas = async () => 
+    {
+      const filtross = collection(store, 'filtros')
+      const filtro = query(filtross, where("idmascota", "==", datosUsuario.activepet))
+      const queryfiltro = await getDocs(filtro)
+      const doc = queryfiltro.docs[0];
+      const data = doc.data();
+      const {distancia, edadMaxima, edadMinima, especie, raza, sexo} = data;
+
+      const mascotas = collection(store, 'mascotas');
+      try{
+        // const mascotasQuery = query(mascotas,
+        //   where("idusuario", "!=", datosUsuario.id),
+        //   where("especie", "==", especie),
+        //   where("raza", "==", raza),
+        //   where("sexo", "==", sexo),
+        //   where("edadMinima", "<=", edadMaxima), // Filtro de desigualdad en edadMinima
+        //   where("edadMinima", ">=", edadMinima)  // Filtro de desigualdad en edadMinima
+        // );
+        const query1 = query(mascotas,
+          where("idusuario", "!=", datosUsuario.id),
+          where("especie", "==", especie),
+          where("raza", "==", raza),
+          where("sexo", "==", sexo)
+        );
+        
+        const query2 = query(mascotas,
+          where("edadMinima", "<=", edadMaxima),
+          where("edadMinima", ">=", edadMinima)
+        );
+        
+        const querySnapshot1 = await getDocs(query1);
+        const querySnapshot2 = await getDocs(query2);
+        
+        // Obtener los documentos que coinciden en ambas consultas
+        const resultDocs = querySnapshot1.docs.filter(doc1 =>
+          querySnapshot2.docs.some(doc2 => doc2.id === doc1.id)
+        );
+        
+      }
+      catch(e)
+      {
+        console.log("No se encontraron mascotas! Error: ", e)
+      }
+      
+    }
+
     const authUser = () =>{
       auth.onAuthStateChanged(async (usuarioActual) => {
         if (usuarioActual) {
           const email = usuarioActual.email;
 
           if (email) {
-            // const usuarioRef = store.collection('usuarios').doc();
-            // const doc = await usuarioRef.get();
             const usuarioss = collection(store,'usuarios')
             const user = query(usuarioss, where("email", "==", email))
             const querySnapshots = await getDocs(user)
             if (!querySnapshots.empty) {
                 const doc = querySnapshots.docs[0];
                 const data = doc.data()
-                const { nombre, apellido } = data;
-                setDatosUsuario({ nombre, apellido, email });
+                const { nombre, apellido, id, activepet } = data;
+                setDatosUsuario({ nombre, apellido, email, id, activepet });
               }
             }
         }
       })
+      traerMascotas()
     }
     authUser()
   }, []);
@@ -143,20 +182,7 @@ const Menu: React.FC = () => {
         </IonHeader>
 
         <IonModal ref={modal1} isOpen={mostrarModalmf} onDidDismiss={cerrarModalmf}>
-          <IonHeader>
-            <IonToolbar>
-              <IonButtons slot="start">
-                <IonButton onClick={() => modal1.current?.dismiss()}>Cancelar</IonButton>
-              </IonButtons>
-              <IonTitle>Filtros</IonTitle>
-              <IonButtons slot="end">
-                <IonButton strong={true} onClick={() => confirm()}>
-                  Aplicar
-                </IonButton>
-              </IonButtons>
-            </IonToolbar>
-          </IonHeader>
-          <Filtros></Filtros>
+          <Filtros onClose={cerrarModalmf}></Filtros>
         </IonModal>
 
 

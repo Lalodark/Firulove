@@ -16,7 +16,6 @@ const Perfil: React.FC<{ datosUsuario: any; onClose: () => void }> = ({
     auth.signOut();
     history.push('/landing');
     onClose();
-    
 }
 
   return (
