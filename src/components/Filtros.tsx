@@ -84,25 +84,43 @@ const Filtros: React.FC <{onClose: () => void }> = ({
 
   const confirm = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const idpet = 'llzlmpck'
+    //const idpet = 'llzlmpck'
+
+    const getpetid = async() =>{
+      auth.onAuthStateChanged(async (usuarioActual) => {
+        if (usuarioActual) {
+          const email = usuarioActual.email;
+          const usuarioss = collection(store,'usuarios')
+          const user = query(usuarioss, where("email", "==", email))
+          const querySnapshots = await getDocs(user)
+          if (!querySnapshots.empty) {
+              const doc = querySnapshots.docs[0];
+              const data = doc.data()
+              const {activepet} = data;
+              guardarFiltros(activepet)
+      }}})
+    }
+    const guardarFiltros = async(idpet:any) =>{
     const mascotass = collection(store,'filtros')
     const filtro = query(mascotass, where("idmascota", "==", idpet))
     const querySnapshots = await getDocs(filtro)
     if(!querySnapshots.empty)
-    {
-      const docs = querySnapshots.docs[0];
-      const newfilters ={
-        idmascota:idpet,
-        especie:Especie,
-        raza:Raza,
-        sexo:sexo,
-        distancia:distancia,
-        edadMinima:rangeValue.lower,
-        edadMaxima:rangeValue.upper
+      {
+        const docs = querySnapshots.docs[0];
+        const newfilters ={
+          idmascota:idpet,
+          especie:Especie,
+          raza:Raza,
+          sexo:sexo,
+          distancia:distancia,
+          edadMinima:rangeValue.lower,
+          edadMaxima:rangeValue.upper
+        }
+        await store.collection('filtros').doc(docs.id).set(newfilters)
       }
-      await store.collection('filtros').doc(docs.id).set(newfilters)
+      onClose()
     }
-    onClose()
+    getpetid()
   }
 
   return (
@@ -154,7 +172,7 @@ const Filtros: React.FC <{onClose: () => void }> = ({
             </IonItem>
             <IonItem>
               <IonLabel position="stacked">Distancia</IonLabel>
-              <IonRange min={0} max={80} value={distancia} onIonChange={handleRangeChange}></IonRange>
+              <IonRange min={1} max={80} value={distancia} onIonChange={handleRangeChange}></IonRange>
 
               <div>
               Distancia: {distancia} KM
@@ -163,7 +181,7 @@ const Filtros: React.FC <{onClose: () => void }> = ({
             
             <IonItem>
               <IonLabel position="stacked">Edad</IonLabel>
-              <IonRange min={0} max={10} step={1} dualKnobs={true} ticks={true} snaps={true} onIonChange={handleDualRangeChange} value={{lower: rangeValue.lower, upper: rangeValue.upper}} ></IonRange>
+              <IonRange min={1} max={15} step={1} dualKnobs={true} ticks={true} snaps={true} onIonChange={handleDualRangeChange} value={{lower: rangeValue.lower, upper: rangeValue.upper}} ></IonRange>
               <div>
                 Edad: {rangeValue.lower} - {rangeValue.upper} años
               </div>

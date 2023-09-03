@@ -131,7 +131,7 @@ const Chats: React.FC = () => {
             
             <div className='chats'>
               {characters.map((character) =>
-                <IonItem button key={character.name}>
+                <IonItem button key={character.name} href='chats/chat'>
                   <IonAvatar slot="start">
                     <img src={character.url} />
                   </IonAvatar>

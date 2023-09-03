@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect } from 'react';
+import React, {useState, useRef, useEffect, useReducer } from 'react';
 import { IonContent, IonHeader, IonPage, IonImg, IonToolbar, IonTabBar, IonTabButton, IonIcon, IonLabel, IonButton, IonModal, IonItem, IonTitle,
 IonInput, IonButtons, IonSelect, IonSelectOption, IonRange, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle} from '@ionic/react';
 import TinderCard from 'react-tinder-card'
@@ -17,42 +17,7 @@ import dido from '../images/dido.jpg'
 import cuscus from '../images/cuscus.jpg'
 import yamila from '../images/yamila.jpg'
 
-
-const db = [
-  {
-    name: 'Firulais',
-    url: firulais,
-    age: 5,
-    distance: 10
-  },
-  {
-    name: 'Fido',
-    url: fido,
-    age: 7,
-    distance: 8
-  },
-  {
-    name: 'Dido',
-    url: dido,
-    age: 3,
-    distance: 4
-  },
-  {
-    name: 'Cuscus',
-    url: cuscus,
-    age: 6,
-    distance: 12
-  },
-  {
-    name: 'Yamila',
-    url: yamila,
-    age: 8,
-    distance: 5
-  }
-]
-
 const Menu: React.FC = () => {
-  const characters = db
   const [lastDirection, setLastDirection] = useState('')
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: '',
@@ -61,10 +26,29 @@ const Menu: React.FC = () => {
     id:'',
     activepet:''
   });
+  
+
+  interface Mascota {
+    // Define aquí las propiedades de las mascotas, como nombre, edad, latitud, longitud, etc.
+    id:string,
+    nombre:string,
+    edad:number,
+    especie:string,
+    raza:string,
+    descripcion:string,
+    sexo: string,
+    color : string[],
+    distancia:number
+  }
+  const [mascotasFiltradas, setMascotasFiltradas] = useState<Mascota[]>([]);
+  const [currentPetIndex, setCurrentPetIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [hayMascotasDisponibles, setHayMascotasDisponibles] = useState(true);
 
   const swiped = (direction:string, nameToDelete:string) => {
     console.log('removing: ' + nameToDelete + 'in direction: ' + direction )
     setLastDirection(direction)
+    setCurrentPetIndex(currentPetIndex + 1);
   }
 
   const outOfFrame = (name:string) => {
@@ -77,6 +61,22 @@ const Menu: React.FC = () => {
 
   const [mostrarModalmf, setMostrarModalmf] = useState(false);
   const [mostrarModalmp, setMostrarModalmp] = useState(false);
+
+  const handleSwipeLeft = () => {
+    // Simular un swipe a la izquierda
+    swiped('left', mascotasFiltradas[currentPetIndex].nombre);
+    if (currentPetIndex + 1 === mascotasFiltradas.length) {
+      setHayMascotasDisponibles(false);
+    }
+  };
+
+  const handleSwipeRight = () => {
+    // Simular un swipe a la derecha
+    swiped('right', mascotasFiltradas[currentPetIndex].nombre);
+    if (currentPetIndex + 1 === mascotasFiltradas.length) {
+      setHayMascotasDisponibles(false);
+    }
+  };
 
   const abrirModalmp = () => {
     setMostrarModalmp(true);
@@ -94,53 +94,132 @@ const Menu: React.FC = () => {
     setMostrarModalmf(false);
   };
 
+  function calcularDistancia(lat1:any, lon1:any, lat2:any, lon2:any) {
+    // Radio de la Tierra en kilómetros
+    const radioTierra = 6371;
+  
+    // Convertir las latitudes y longitudes de grados a radianes
+    const latitud1Rad = (Math.PI / 180) * lat1;
+    const longitud1Rad = (Math.PI / 180) * lon1;
+    const latitud2Rad = (Math.PI / 180) * lat2;
+    const longitud2Rad = (Math.PI / 180) * lon2;
+  
+    // Diferencia de latitud y longitud
+    const diferenciaLatitud = latitud2Rad - latitud1Rad;
+    const diferenciaLongitud = longitud2Rad - longitud1Rad;
+  
+    // Calcular la distancia utilizando la fórmula haversine
+    const a =
+      Math.sin(diferenciaLatitud / 2) ** 2 +
+      Math.cos(latitud1Rad) *
+        Math.cos(latitud2Rad) *
+        Math.sin(diferenciaLongitud / 2) ** 2;
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distancia = radioTierra * c;
+  
+    return distancia;
+  }
+
   useEffect(() => {
 
-    const traerMascotas = async () => 
+    const traerMascotas = async (activepet:any, id:any) => 
     {
+      const mascotasAgregadas = new Set();
+      const mascotasFiltradasNuevas:Mascota[] = [];
+      const mascotass = collection(store, 'mascotas')
+      const mascotaactual = query(mascotass, where("idmascota", "==", activepet)) 
+      const querymascota = await getDocs(mascotaactual)
+      const docm = querymascota.docs[0];
+      const datam = docm.data();
+      const {latitud, longitud} = datam;
+      const distanciaMascotaActual = {
+        latitud: latitud,// La latitud de la mascota actual,
+        longitud: longitud// La longitud de la mascota actual,
+      };
+
       const filtross = collection(store, 'filtros')
-      const filtro = query(filtross, where("idmascota", "==", datosUsuario.activepet))
+      const filtro = query(filtross, where("idmascota", "==", activepet)) 
       const queryfiltro = await getDocs(filtro)
       const doc = queryfiltro.docs[0];
       const data = doc.data();
       const {distancia, edadMaxima, edadMinima, especie, raza, sexo} = data;
-
       const mascotas = collection(store, 'mascotas');
+      const matchesc = collection(store, 'matchesfallidos');
+      const matchese = collection(store, 'matchesexitosos');
       try{
-        // const mascotasQuery = query(mascotas,
-        //   where("idusuario", "!=", datosUsuario.id),
-        //   where("especie", "==", especie),
-        //   where("raza", "==", raza),
-        //   where("sexo", "==", sexo),
-        //   where("edadMinima", "<=", edadMaxima), // Filtro de desigualdad en edadMinima
-        //   where("edadMinima", ">=", edadMinima)  // Filtro de desigualdad en edadMinima
-        // );
         const query1 = query(mascotas,
-          where("idusuario", "!=", datosUsuario.id),
+          where("idusuario", "!=", id),
           where("especie", "==", especie),
           where("raza", "==", raza),
           where("sexo", "==", sexo)
         );
         
-        const query2 = query(mascotas,
-          where("edadMinima", "<=", edadMaxima),
-          where("edadMinima", ">=", edadMinima)
-        );
         
         const querySnapshot1 = await getDocs(query1);
-        const querySnapshot2 = await getDocs(query2);
-        
-        // Obtener los documentos que coinciden en ambas consultas
-        const resultDocs = querySnapshot1.docs.filter(doc1 =>
-          querySnapshot2.docs.some(doc2 => doc2.id === doc1.id)
-        );
+
+        const mascotasFiltradass = querySnapshot1.docs.filter(doc => {
+          const {edad} = doc.data(); // Asumiendo que tienes un campo "edad" en tus documentos
+          return edad >= edadMinima && edad <= edadMaxima;
+        });
+      
+
+
+        mascotasFiltradass.forEach(async (doc) => {
+          const mascota = doc.data();
+          const distanciaf = Math.round(calcularDistancia(
+            distanciaMascotaActual.latitud,
+            distanciaMascotaActual.longitud,
+            mascota.latitud, // Latitud de la mascota en el documento
+            mascota.longitud // Longitud de la mascota en el documento
+          ));
+
+          const querymf1 = query(matchesc,
+            where("idmascota1", "==", mascota.idmascota), // Compara con los IDs de las mascotas filtradas
+            where("idmascota2", "==", activepet) // Compara con el ID de la mascota actual
+          );
+  
+          const querymf2 = query(matchesc,
+            where("idmascota2", "==", mascota.idmascota),
+            where("idmascota1", "==", activepet)
+          );
+
+          const queryme1 = query(matchesc,
+            where("idmascota1", "==", mascota.idmascota), // Compara con los IDs de las mascotas filtradas
+            where("idmascota2", "==", activepet) // Compara con el ID de la mascota actual
+          );
+  
+          const queryme2 = query(matchesc,
+            where("idmascota2", "==", mascota.idmascota),
+            where("idmascota1", "==", activepet)
+          );
+  
+          const querySnapshotmf1 = await getDocs(querymf1);
+          const querySnapshotmf2 = await getDocs(querymf2);
+          const querySnapshotme1 = await getDocs(queryme1);
+          const querySnapshotme2 = await getDocs(queryme2);
+
+          if (distanciaf <= distancia) {
+            const {idmascota, nombre, edad, especie, raza, sexo, descripcion, color} = mascota
+            // Agregar la mascota a la lista de mascotas filtradas si cumple con la distancia máxima
+            if(querySnapshotmf1.empty && querySnapshotmf2.empty && querySnapshotme1.empty && querySnapshotme2.empty && !mascotasAgregadas.has(idmascota)){
+              mascotasFiltradasNuevas.push({ ...mascota, id:idmascota, nombre:nombre, edad:edad, especie:especie,
+                raza:raza, sexo:sexo, descripcion:descripcion,color:color, distancia:distanciaf });
+            }
+            mascotasAgregadas.add(idmascota);
+          }       
+        });
+
+        setTimeout(() => {
+          setMascotasFiltradas(mascotasFiltradasNuevas);
+          setIsLoading(false);
+        }, 5000)
         
       }
+
       catch(e)
       {
         console.log("No se encontraron mascotas! Error: ", e)
       }
-      
     }
 
     const authUser = () =>{
@@ -157,13 +236,13 @@ const Menu: React.FC = () => {
                 const data = doc.data()
                 const { nombre, apellido, id, activepet } = data;
                 setDatosUsuario({ nombre, apellido, email, id, activepet });
+                traerMascotas(activepet, id)
               }
             }
         }
       })
-      traerMascotas()
-    }
-    authUser()
+    } 
+    authUser();
   }, []);
 
   return (
@@ -200,35 +279,57 @@ const Menu: React.FC = () => {
   
       <div className='generic'>
           <div className='cardContainer generic'>
-            {characters.map((character) =>
-              <TinderCard className='swipe generic' key={character.name} onSwipe={(dir) => swiped(dir, character.name)} onCardLeftScreen={() => outOfFrame(character.name)}>
-                <div style={{ backgroundImage: 'url(' + character.url + ')' }} className='card'>
-                  {/* <h3>{character.name}</h3> */}
-                </div>
-              </TinderCard>
-            )}
+            {hayMascotasDisponibles ? 
+            (mascotasFiltradas.slice(currentPetIndex, currentPetIndex + 1).map((character) =>
+              <TinderCard className='swipe generic' key={character.nombre} 
+              onSwipe={(dir) => 
+                {swiped(dir, character.nombre);
+                  if (currentPetIndex + 1 === mascotasFiltradas.length) {
+                    setHayMascotasDisponibles(false);
+                  }
+                }}
+              onCardLeftScreen={() => outOfFrame(character.nombre)} 
+              preventSwipe={['up', 'down']}>
+                <div style={{ backgroundImage: 'url(' + firulais + ')' }} className='card'></div>
+              </TinderCard>)):
+              (
+                <div>No hay más mascotas disponibles.</div>
+              )
+            }
           </div>
           {lastDirection ? <h2 className='infoText'>You swiped {lastDirection}</h2> : <h2 className='infoText' />}  
         </div>       
         <div className='buttons'>
-          <IonButton shape='round' color={'danger'} size='large'>
-            <IonIcon aria-hidden="true" icon={closeSharp} />
+          <IonButton shape='round' color={'danger'} size='large' onClick={handleSwipeLeft}>
+            <IonIcon aria-hidden="true" icon={closeSharp}/>
           </IonButton>
-          <IonButton shape='round' color={'success'} size='large' className='likebutton'>
+          <IonButton shape='round' color={'success'} size='large' className='likebutton' onClick={handleSwipeRight}>
             <IonIcon aria-hidden="true" icon={heartSharp} />
           </IonButton>
       </div>
       <div>
-      {characters.map((character) =>
-        <IonCard key={character.name} className='cards'>
-          <IonCardHeader>
-            <IonCardTitle>{character.name}, {character.age}</IonCardTitle>
-            <IonCardSubtitle>{character.distance} Km</IonCardSubtitle>
-          </IonCardHeader>
-  
-          <IonCardContent>Descripción de la mascota.</IonCardContent>
-        </IonCard>
-      )}
+          {isLoading ? (
+            <div>Cargando datos...</div>
+          ) : (
+            <div> 
+              {
+                hayMascotasDisponibles ? (
+                <IonCard key={mascotasFiltradas[currentPetIndex].nombre} className={`cards`}>
+                  <IonCardHeader>
+                    <IonCardTitle>{mascotasFiltradas[currentPetIndex].nombre}, {mascotasFiltradas[currentPetIndex].edad} años</IonCardTitle>
+                    <IonCardSubtitle>{mascotasFiltradas[currentPetIndex].distancia} Km</IonCardSubtitle>
+                  </IonCardHeader>
+                  <IonCardContent>{mascotasFiltradas[currentPetIndex].descripcion}</IonCardContent>
+                </IonCard>
+                )
+                :
+                (
+                  <span></span>
+                )
+              }      
+            </div>
+          )
+        }
       </div>
       
 
