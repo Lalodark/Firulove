@@ -1,17 +1,22 @@
-import React, {useEffect, useState} from 'react';
-import {useHistory} from 'react-router-dom'
-import { IonContent, IonLabel, IonButton, IonItem, IonHeader, IonToolbar, IonRange, IonSelect, IonSelectOption,
-IonButtons,IonTitle, IonInput } from '@ionic/react';
-import {auth, store} from '../firebase'
-import { navigate } from 'ionicons/icons';
+import React from 'react';
+import { useHistory } from 'react-router-dom'
+
+import { IonContent, IonButton, IonItem, IonInput } from '@ionic/react';
+
+import { auth } from '../firebase'
 
 const Perfil: React.FC<{ datosUsuario: any; onClose: () => void }> = ({
   datosUsuario,
   onClose,
 }) => {
+
+  //Variables & Declaraciones
+  
   const { nombre, apellido, email } = datosUsuario;
   const history = useHistory();
   
+  //Funciones
+
   const CerrarSesion = () =>{
     auth.signOut();
     history.push('/landing');

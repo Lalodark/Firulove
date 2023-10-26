@@ -1,31 +1,31 @@
-import React, {useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
+
 import { IonContent, IonLabel, IonPage, IonButton, IonImg, IonHeader, IonToolbar, IonIcon, IonTabBar, IonTabButton, IonModal,
 IonTitle, IonButtons,IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonFab, IonFabButton, IonGrid,
-IonRow, IonCol } from '@ionic/react';
-import './Mascotas.css'
+IonRow, IonCol, IonChip, IonAlert, useIonViewWillEnter, useIonLoading } from '@ionic/react';
+import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, createOutline, trashOutline, addOutline,
+checkmarkOutline } from 'ionicons/icons';
 
-import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, createOutline, trashOutline, addOutline } from 'ionicons/icons';
-import logo from '../images/logofirulove2.png'
-
-import {auth, store} from '../firebase'
+import { auth, store } from '../firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
-import { useHistory } from 'react-router-dom';
 
 import Filtros from './Filtros';
 import Perfil from './Perfil';
 
+import './Mascotas.css'
 import firulais from '../images/firulais.jpg'
-import fido from '../images/fido.jpg'
-import dido from '../images/dido.jpg'
-import cuscus from '../images/cuscus.jpg'
-import yamila from '../images/yamila.jpg'
+import logo from '../images/logofirulove2.png'
 
 
 const Mascotas: React.FC = () => {
+
+  //Variables & Declaraciones
+
   const history = useHistory();
+  const [presentload, dismiss] = useIonLoading();
   const modal5 = useRef<HTMLIonModalElement>(null);
   const modal6 = useRef<HTMLIonModalElement>(null);
-  const input = useRef<HTMLIonInputElement>(null);
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: '',
     apellido: '',
@@ -33,18 +33,14 @@ const Mascotas: React.FC = () => {
   });
   const[arraymascotas, setArrayMascotas] = useState<any[]>([]);
   const[userid, setUserID] = useState<string>('')
-  // const [message, setMessage] = useState(
-  //   'This modal example uses triggers to automatically open a modal when the button is clicked.'
-  // );
-
-  function confirm() {
-    modal5.current?.dismiss(input.current?.value, 'confirm');
-  }
-
+  const[active, setActive] = useState<string>('')
 
   const [mostrarModalmaf, setMostrarModalmaf] = useState(false);
   const [mostrarModalmap, setMostrarModalmap] = useState(false);
+  const [openAlertIndex, setOpenAlertIndex] = useState(-1);
 
+  //Funciones
+  
   const abrirModalmap = () => {
     setMostrarModalmap(true);
   };
@@ -61,17 +57,27 @@ const Mascotas: React.FC = () => {
     setMostrarModalmaf(false);
   };
 
+  const presentLoading = () => {
+    presentload({
+      message: 'Cargando tus mascotas',
+      duration: 1000,
+    })
+  }
+
   const handleEditarClick = (mascota:any) => {
-    // Aquí redirigimos a la página de edición y pasamos los datos de la mascota en la URL
     history.push(`/mascotas/create?id=${mascota.idmascota}`);
-    //&nombre=${mascota.nombre}&edad=${mascota.edad}
   };
+
+  const goCreate = () =>  {
+    history.push(`/mascotas/create`);
+  }
 
   const handleBorrarClick = async (mascota:any) =>  {
     try{
       let nuevoac = ''
       const cambioac = collection(store,'mascotas')
-      const petac = query(cambioac, where("idmascota", "!=", mascota.idmascota))
+      const petac = query(cambioac, where("idmascota", "!=", mascota.idmascota),
+      where("idusuario", "==", userid))
       const queryac = await getDocs(petac)
         if(!queryac.empty)
         {
@@ -90,7 +96,7 @@ const Mascotas: React.FC = () => {
           if (!querySnapshots.empty) {
               const doc = querySnapshots.docs[0];
               const data = doc.data()
-              const {apellido, email, fecha, id, nombre, activepet } = data;
+              const {apellido, email, fecha, id, nombre } = data;
               const userr = {
                 nombre:nombre,
                 apellido:apellido,
@@ -102,76 +108,59 @@ const Mascotas: React.FC = () => {
               await store.collection('usuarios').doc(doc.id).set(userr)
           }}})
 
-    const filtross = collection(store, 'filtros')
-    const filtrosborrar = query(filtross, where("idmascota", "==", mascota.idmascota))
-    const queryFiltros = await getDocs(filtrosborrar)
-    if(!queryFiltros.empty)
-    {
-      const docs = queryFiltros.docs[0];
-      await deleteDoc(doc(store, 'filtros', docs.id));
-    }
-
-    const mascotass = collection(store,'mascotas')
-    const petborrar = query(mascotass, where("idmascota", "==", mascota.idmascota))
-    const querySnapshots = await getDocs(petborrar)
-      if(!querySnapshots.empty)
+      const filtross = collection(store, 'filtros')
+      const filtrosborrar = query(filtross, where("idmascota", "==", mascota.idmascota))
+      const queryFiltros = await getDocs(filtrosborrar)
+      if(!queryFiltros.empty)
       {
-        const docs = querySnapshots.docs[0];
-        await deleteDoc(doc(store, 'mascotas', docs.id));
+        const docs = queryFiltros.docs[0];
+        await deleteDoc(doc(store, 'filtros', docs.id));
       }
 
-    const pet = query(mascotass, where("idusuario", "==", userid))
-    const querySnapshots1 = await getDocs(pet)
-      if(!querySnapshots1.empty)
-      {
-        const docs = querySnapshots1.docs;
-        const arraypets = docs.map(item => (item.data()));
-        setArrayMascotas(arraypets);
-      }
+      const matchese = collection(store, 'matchesexitosos');
+
+      const querymb1 = query(matchese,
+        where("idmascota1", "==", mascota.idmascota)
+      );
+
+      const querymb2 = query(matchese,
+        where("idmascota2", "==", mascota.idmascota)
+      );
+
+      const querySnapshotmp1 = await getDocs(querymb1);
+      const querySnapshotmp2 = await getDocs(querymb2);
+
+      querySnapshotmp1.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+    
+      querySnapshotmp2.forEach(async (doc) => {
+        await deleteDoc(doc.ref);
+      });
+
+  
+      const mascotass = collection(store,'mascotas')
+      const petborrar = query(mascotass, where("idmascota", "==", mascota.idmascota))
+      const querySnapshots = await getDocs(petborrar)
+        if(!querySnapshots.empty)
+        {
+          const docs = querySnapshots.docs[0];
+          await deleteDoc(doc(store, 'mascotas', docs.id));
+        }
+
+      const pet = query(mascotass, where("idusuario", "==", userid))
+      const querySnapshots1 = await getDocs(pet)
+        if(!querySnapshots1.empty)
+        {
+          const docs = querySnapshots1.docs;
+          const arraypets = docs.map(item => (item.data()));
+          setArrayMascotas(arraypets);
+        }
     }
     catch(error:any){
       console.log("No se pudo borrar la mascota", error);
     }
   }
-  
-  useEffect(() => {
-
-    const listamascotas = async (userid:any) =>  {
-      const mascotass = collection(store,'mascotas')
-      const pet = query(mascotass, where("idusuario", "==", userid))
-      const querySnapshots = await getDocs(pet)
-      if(!querySnapshots.empty)
-      {
-        const docs = querySnapshots.docs;
-        const arraypets = docs.map(item => (item.data()));
-        setArrayMascotas(arraypets);
-      }
-    }
-
-    const authUser = () =>{
-      auth.onAuthStateChanged(async (usuarioActual) => {
-        if (usuarioActual) {
-          const email = usuarioActual.email;
-          if (email) {
-            // const usuarioRef = store.collection('usuarios').doc();
-            // const doc = await usuarioRef.get();
-            const usuarioss = collection(store,'usuarios')
-            const user = query(usuarioss, where("email", "==", email))
-            const querySnapshots = await getDocs(user)
-            if (!querySnapshots.empty) {
-                const doc = querySnapshots.docs[0];
-                const data = doc.data()
-                const { id, nombre, apellido } = data;
-                setDatosUsuario({ nombre, apellido, email });
-                setUserID(id);
-                listamascotas(id);
-              }
-            }
-        }
-      })
-    }
-    authUser()
-  }, []);
   
   const cambioActual = (idpet:any) => {
     auth.onAuthStateChanged(async (usuarioActual) => {
@@ -183,7 +172,7 @@ const Mascotas: React.FC = () => {
         if (!querySnapshots.empty) {
             const doc = querySnapshots.docs[0];
             const data = doc.data()
-            const {apellido, email, fecha, id, nombre, activepet } = data;
+            const {apellido, email, fecha, id, nombre } = data;
             const userr = {
               nombre:nombre,
               apellido:apellido,
@@ -193,8 +182,65 @@ const Mascotas: React.FC = () => {
               activepet:idpet
             }
             await store.collection('usuarios').doc(doc.id).set(userr)
+            history.push('/menu')
+            location.reload()
     }}})
+    setTimeout(() => {
+      setActive(idpet)
+    }, 5000)
   }
+
+  const authUser = () =>{
+    auth.onAuthStateChanged(async (usuarioActual) => {
+      if (usuarioActual) {
+        const email = usuarioActual.email;
+        if (email) {
+          const usuarioss = collection(store,'usuarios')
+          const user = query(usuarioss, where("email", "==", email))
+          const querySnapshots = await getDocs(user)
+          if (!querySnapshots.empty) {
+              const doc = querySnapshots.docs[0];
+              const data = doc.data()
+              const { id, nombre, apellido, activepet } = data;
+              setDatosUsuario({ nombre, apellido, email });
+              setUserID(id);
+              setActive(activepet)
+              listamascotas(id);
+            }
+          }
+      }
+    })
+  }
+
+  const listamascotas = async (userid:any) =>  {
+    const mascotass = collection(store,'mascotas')
+    const pet = query(mascotass, where("idusuario", "==", userid))
+    const querySnapshots = await getDocs(pet)
+    if(!querySnapshots.empty)
+    {
+      presentLoading()
+      const docs = querySnapshots.docs;
+      const arraypets = docs.map(item => (item.data()));
+      setArrayMascotas(arraypets);
+    }
+  }
+
+  const openAlert = (index:any) => {
+    setOpenAlertIndex(index);
+  };
+
+  const closeAlert = () => {
+    setOpenAlertIndex(-1);
+  };
+
+  useIonViewWillEnter (() => {
+    authUser()
+  })  
+
+  // useEffect(() => {
+  //   console.log("e")
+  // }, []);
+  
 
   return (
     <IonPage>
@@ -211,38 +257,67 @@ const Mascotas: React.FC = () => {
                 </IonToolbar>
             </IonHeader>
             <div>
-            {arraymascotas.map(character =>
+            {arraymascotas.map((character, index) =>
               <IonCard key={character.idmascota} button onClick={() => cambioActual(character.idmascota)}>
                 <IonCardHeader>
-                  <img src={firulais} />
+                  <img src={character.imagenUrl ? character.imagenUrl:firulais} />
                   <IonCardTitle>{character.nombre}</IonCardTitle>
                   <IonCardSubtitle>Edad: {character.edad}</IonCardSubtitle>
                 </IonCardHeader>
-
+                {
+                  character.idmascota == active ? (
+                    <IonChip color="tertiary">
+                    <IonIcon aria-hidden="true" icon={checkmarkOutline}></IonIcon>
+                    &#160;&#160;Seleccionada</IonChip>  
+                  )
+                  :
+                  (
+                    <span></span>
+                  )
+                }           
                 <IonCardContent>{character.descripcion}</IonCardContent>
-
                 <IonGrid>
                   <IonRow>
                     <IonCol>
-                      <IonButton expand="block" color="secondary" onClick={() => handleEditarClick(character)} > 
+                      <IonButton expand="block" color="secondary" onClick={(e) =>{e.stopPropagation(); handleEditarClick(character);}} > 
                         <IonIcon aria-hidden="true" icon={createOutline}></IonIcon>
                       </IonButton>
                     </IonCol>
                     <IonCol>
-                      <IonButton expand="block" onClick={() => {handleBorrarClick(character)}}>
+                      <IonButton disabled={arraymascotas.length == 1} expand="block" onClick={(e) => {e.stopPropagation(); 
+                        openAlert(index);}}>
+                      <IonAlert
+                         header="Confirmar"
+                         isOpen={openAlertIndex === index}
+                         message="¿Está seguro que desea borrar esta mascota?"
+                         buttons={[
+                           {
+                             text: 'Cancelar',
+                             role: 'cancel',
+                             handler: () => {
+                              closeAlert();
+                             },
+                           },
+                           {
+                             text: 'Confirmar',
+                             role: 'confirm',
+                             handler: () => { 
+                              handleBorrarClick(character);
+                             },
+                           },
+                         ]}
+                         onDidDismiss={() => closeAlert()}></IonAlert>
                         <IonIcon aria-hidden="true" icon={trashOutline}></IonIcon>
                       </IonButton>                      
                     </IonCol>
                   </IonRow>
                 </IonGrid>
-                
-
               </IonCard>
             )}
             </div>
 
             <IonFab slot="fixed" vertical="bottom" horizontal="end">
-              <IonFabButton href='/mascotas/create'>
+              <IonFabButton onClick={() => goCreate()}>
                 <IonIcon icon={addOutline}></IonIcon>
               </IonFabButton>
             </IonFab>

@@ -12,6 +12,21 @@
 
 .cards{
   position: relative;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 8px; 
+}
+
+.section {
+  border: 1px;
+  margin-top: 20px;
+  margin-left: -1px;
+  color:black;
+  text-align: left;
+}
+
+.section h1 {
+  text-align: left;
+  margin-bottom: -10px;
 }
 
 .swipe {
@@ -24,6 +39,23 @@
   height: 300px !important;
 }
 
+.nopets {
+  width: 100vw;
+}
+
+.text {
+  width: 90vw;
+  margin: auto;
+  text-align: center;
+}
+
+.loading {
+  width: 90vw;
+  margin: auto;
+  margin-top: 350px;
+  text-align: center;
+}
+
 .card {
   position: relative;
   background-color: #fff;
@@ -34,6 +66,7 @@
   border-radius: 20px;
   background-size: cover;
   background-position: center;
+  
 }
 
 .cardContent {
@@ -63,6 +96,14 @@ ion-img.logoheader{
   bottom: 5%;
 }
 
+.macho {
+  --background: #3498db; /* Azul */
+}
+
+.hembra {
+  --background: #e74c3c; /* Rosa */
+}
+
 .buttons{
   margin-right: 40px;
   margin-left: 40px;
@@ -70,5 +111,25 @@ ion-img.logoheader{
 
 .likebutton{
   float: right;
+}
+
+/* Animación para deslizar a la izquierda */
+@keyframes swipe-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Animación para deslizar a la derecha */
+@keyframes swipe-right {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(100%);
+  }
 }
 

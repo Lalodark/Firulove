@@ -15,6 +15,8 @@ import Mascotas from './components/Mascotas'
 import Chats from './components/Chats';
 import Mascotas_CE from './components/Mascotas_CE'
 import Chat_Personal from './components/Chat_Personal';
+import Welcome from './components/Welcome';
+import Prueba from './components/Prueba'
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -56,7 +58,7 @@ const App: React.FC = () => (
           <Route exact path="/mascotas">
             <Mascotas />
           </Route>
-          <Route path="/Chats">
+          <Route exact path="/Chats">
             <Chats />
           </Route>
           <Route exact path="/">
@@ -67,6 +69,12 @@ const App: React.FC = () => (
           </Route>
           <Route path='/Chats/chat'>
             <Chat_Personal />
+          </Route>
+          <Route path='/welcome'>
+            <Welcome />
+          </Route>
+          <Route path='/prueba'>
+            <Prueba />
           </Route>
         </IonRouterOutlet>
     </IonReactRouter>

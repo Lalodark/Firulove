@@ -1,0 +1,20 @@
+.small-icon {
+    font-size: 10px; /* Tamaño deseado en píxeles */
+  }
+  
+
+  .timestamp {
+    margin-left: 10px; /* Ajusta el espacio a la izquierda de la hora según tus preferencias */
+    font-size: 12px; /* Ajusta el tamaño de la fuente de la hora según tus preferencias */
+    color: #999; /* Ajusta el color según tus preferencias */
+  }
+
+  .nopets {
+    width: 100vw;
+  }
+  
+  .text {
+    width: 90vw;
+    margin: auto;
+    text-align: center;
+  }

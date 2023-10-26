@@ -1,23 +1,33 @@
-import React, {useState, useRef, useEffect, useReducer } from 'react';
-import { IonContent, IonHeader, IonPage, IonImg, IonToolbar, IonTabBar, IonTabButton, IonIcon, IonLabel, IonButton, IonModal, IonItem, IonTitle,
-IonInput, IonButtons, IonSelect, IonSelectOption, IonRange, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle} from '@ionic/react';
+import React, { useState, useRef, useEffect } from 'react';
 import TinderCard from 'react-tinder-card'
-import {auth, store} from '../firebase'
-import logo from '../images/logofirulove2.png'
-import './Menu.css'
-import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, heartSharp, closeSharp } from 'ionicons/icons';
+import { Geolocation } from '@ionic-native/geolocation';
+
+import { IonContent, IonHeader, IonPage, IonImg, IonToolbar, IonTabBar, IonTabButton, IonIcon, IonLabel, IonButton, IonModal, IonTitle,
+IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonAlert, useIonViewWillEnter, IonSpinner, IonBadge,
+IonChip} from '@ionic/react';
+import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, heartSharp, closeSharp, maleSharp, femaleSharp } from 'ionicons/icons';
+
+import uniqid from 'uniqid';
 
 import Filtros from './Filtros';
 import Perfil from './Perfil';
-import { collection, query, where, getDocs } from "firebase/firestore";
 
+import { auth, store } from '../firebase'
+import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+
+
+import './Menu.css'
+import logo from '../images/logofirulove2.png'
 import firulais from '../images/firulais.jpg'
-import fido from '../images/fido.jpg'
-import dido from '../images/dido.jpg'
-import cuscus from '../images/cuscus.jpg'
-import yamila from '../images/yamila.jpg'
+import triste from '../images/Triste.png'
+
+import * as tf from '@tensorflow/tfjs';
+
 
 const Menu: React.FC = () => {
+
+  //Variables & Declaraciones
+  
   const [lastDirection, setLastDirection] = useState('')
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: '',
@@ -26,10 +36,8 @@ const Menu: React.FC = () => {
     id:'',
     activepet:''
   });
-  
 
   interface Mascota {
-    // Define aquí las propiedades de las mascotas, como nombre, edad, latitud, longitud, etc.
     id:string,
     nombre:string,
     edad:number,
@@ -38,43 +46,195 @@ const Menu: React.FC = () => {
     descripcion:string,
     sexo: string,
     color : string[],
-    distancia:number
+    distancia:number,
+    imagenUrl:string,
+    likesrec: number
   }
+
+// Define un objeto de mapeo para los colores de especie
+  const speciesColors: { [key: string]: string } = {
+    Perro: 'primary',
+    Gato: 'secondary',
+    Roedor: 'tertiary',
+    Pájaro: 'warning',
+    Reptil: 'dark',
+    Anfibio: 'success',
+    Pez: 'primary',
+    Otro: 'secondary',
+  };
+
+  // Define un objeto de mapeo para los colores de raza
+  const raceColors: { [key: string]: string } = {
+    Perro: '#cf3c4f',
+    Gato: '#36abe0',
+    Roedor: '#4854e0',
+    Pájaro: '#e0ac08',
+    Reptil: '#1e2023',
+    Anfibio: '#28ba62',
+    Pez: '#cf3c4f',
+    Otro: '#36abe0',
+  };
+
+  const coloresMap: { [key: string]: { background: string, text: string } } = {
+    Blanco: { background: 'rgb(255, 255, 255)', text: 'rgb(0, 0, 0)' },
+    Negro: { background: 'rgb(0, 0, 0)', text: 'rgb(255, 255, 255)' },
+    Gris: { background: 'rgb(169, 169, 169)', text: 'rgb(0, 0, 0)' },
+    Marrón: { background: 'rgb(139, 69, 19)', text: 'rgb(255, 255, 255)' },
+    Naranja: { background: 'rgb(255, 165, 0)', text: 'rgb(0, 0, 0)' },
+    Amarillo: { background: 'rgb(255, 255, 0)', text: 'rgb(0, 0, 0)' },
+    Atigrado: { background: 'rgb(128, 0, 0)', text: 'rgb(255, 255, 255)' },
+    Manchado: { background: 'rgb(0, 0, 128)', text: 'rgb(255, 255, 255)' },
+    Rojo: { background: 'rgb(255, 0, 0)', text: 'rgb(255, 255, 255)' },
+    Azul: { background: 'rgb(0, 0, 255)', text: 'rgb(255, 255, 255)' },
+    Verde: { background: 'rgb(0, 128, 0)', text: 'rgb(255, 255, 255)' },
+  };
+  
+
   const [mascotasFiltradas, setMascotasFiltradas] = useState<Mascota[]>([]);
   const [currentPetIndex, setCurrentPetIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [hayMascotasDisponibles, setHayMascotasDisponibles] = useState(true);
+  const [buttons, setButtons] = useState(false);
 
+  const modal1 = useRef<HTMLIonModalElement>(null);
+  const modal2 = useRef<HTMLIonModalElement>(null);
+
+  const [mostrarModalmf, setMostrarModalmf] = useState(false);
+  const [mostrarModalmp, setMostrarModalmp] = useState(false);
+  const [showMatchPopup, setShowMatchPopup] = useState(false);
+  const [mensajeMatch, setMensajeMatch] = useState<string>('')
+  //Funciones
+  
   const swiped = (direction:string, nameToDelete:string) => {
+    if(direction == 'left'){
+      matchfallido(mascotasFiltradas[currentPetIndex].id)
+    }
+    if(direction == 'right'){
+      matchexitoso(mascotasFiltradas[currentPetIndex].id)
+    }
     console.log('removing: ' + nameToDelete + 'in direction: ' + direction )
-    setLastDirection(direction)
+    if (currentPetIndex + 1 === mascotasFiltradas.length) {
+      setHayMascotasDisponibles(false);
+      setButtons(false);
+    }
     setCurrentPetIndex(currentPetIndex + 1);
+  }
+
+  const matchfallido = async (id:string) => {
+    const matchf= {
+      idmascota1: id,
+      idmascota2: datosUsuario.activepet
+    }
+    await store.collection('matchesfallidos').add(matchf)
+    console.log("Match cancelado!")
+  }
+
+  const matchexitoso = async (id:string) => {
+    const sug = collection(store,'sugerencias')
+    const mascs = collection(store,'mascotas')
+
+    const pet = query(mascs, where("idmascota", "==", id))
+    const querySnapshotsl = await getDocs(pet)
+    const docl = querySnapshotsl.docs[0]
+    const data = docl.data();
+    const {nombre} = data;
+    const mascotasFiltradasPorId = mascotasFiltradas.filter((mascota) => mascota.id === id)
+    const likes = mascotasFiltradasPorId[0].likesrec + 1;
+    await store.collection('mascotas').doc(docl.id).update({'likesrecibidos': likes})
+
+
+    const petcolor = query(sug, where("idmascota", "==", datosUsuario.activepet))
+    const querySnapshotsc = await getDocs(petcolor)
+    const docc = querySnapshotsc.docs[0]
+    const {coloresLikes} = docc.data()
+    
+    const mascotasFiltradasPorIdColor = mascotasFiltradas.filter((mascota) => mascota.id === id)
+    const colores = mascotasFiltradasPorIdColor[0].color
+
+    colores.forEach((color) => {
+      // Busca el objeto correspondiente en 'coloresLikes' usando findIndex
+      const index = coloresLikes.findIndex((item:any) => item.color === color);
+    
+      // Si se encuentra el color en 'coloresLikes', incrementa los 'likes'
+      if (index !== -1) {
+        coloresLikes[index].likes += 1;
+      }
+    });
+    await store.collection('sugerencias').doc(docc.id).update({'coloresLikes': coloresLikes})
+    
+    const matchesp = collection(store, 'matchespendientes');
+
+    const querymp1 = query(matchesp,
+      where("idmascotaliker", "==", id), 
+      where("idmascotapending", "==", datosUsuario.activepet) 
+    );
+
+    const querymp2 = query(matchesp,
+      where("idmascotapending", "==", id),
+      where("idmascotaliker", "==", datosUsuario.activepet)
+    );
+
+    const querySnapshotmp1 = await getDocs(querymp1);
+    const querySnapshotmp2 = await getDocs(querymp2);
+
+    if(querySnapshotmp1.empty && querySnapshotmp2.empty)
+    {
+      const matchp= {
+        idmascotaliker: datosUsuario.activepet,
+        idmascotapending: id
+      }
+      await store.collection('matchespendientes').add(matchp)
+      console.log("Match pendiente!")
+    }
+    else{
+        if(querySnapshotmp2.empty){
+          const docs = querySnapshotmp1.docs[0];
+          await deleteDoc(doc(store, 'matchespendientes', docs.id));
+        }
+        else{
+          const docs = querySnapshotmp2.docs[0];
+          await deleteDoc(doc(store, 'matchespendientes', docs.id));
+        }
+      const matche = {
+        idmascota1: id,
+        idmascota2: datosUsuario.activepet,
+        idchat: uniqid()
+      }
+      const chat = {
+        chatid: matche.idchat,
+        messages: []
+      }
+      await store.collection('matchesexitosos').add(matche)
+      await store.collection('chats').add(chat)
+      setMensajeMatch('¡Match exitoso con ' + nombre + '!')
+      setShowMatchPopup(true);
+    }
   }
 
   const outOfFrame = (name:string) => {
     console.log(name + ' left the screen!')
   }
 
-  const modal1 = useRef<HTMLIonModalElement>(null);
-  const modal2 = useRef<HTMLIonModalElement>(null);
-
-
-  const [mostrarModalmf, setMostrarModalmf] = useState(false);
-  const [mostrarModalmp, setMostrarModalmp] = useState(false);
 
   const handleSwipeLeft = () => {
-    // Simular un swipe a la izquierda
-    swiped('left', mascotasFiltradas[currentPetIndex].nombre);
-    if (currentPetIndex + 1 === mascotasFiltradas.length) {
-      setHayMascotasDisponibles(false);
+    const card = document.querySelector('.swipe.generic') as HTMLElement;
+    if (card) {
+      card.style.animation = 'swipe-left 0.3s ease-in-out';
+      setTimeout(() => {
+        swiped('left', mascotasFiltradas[currentPetIndex].nombre); 
+        card.style.animation = ''; 
+      }, 300); 
     }
   };
 
   const handleSwipeRight = () => {
-    // Simular un swipe a la derecha
-    swiped('right', mascotasFiltradas[currentPetIndex].nombre);
-    if (currentPetIndex + 1 === mascotasFiltradas.length) {
-      setHayMascotasDisponibles(false);
+    const card = document.querySelector('.swipe.generic') as HTMLElement;
+    if (card) {
+      card.style.animation = 'swipe-right 0.3s ease-in-out';
+      setTimeout(() => {
+        swiped('right', mascotasFiltradas[currentPetIndex].nombre); 
+        card.style.animation = ''; 
+      }, 400); 
     }
   };
 
@@ -95,20 +255,16 @@ const Menu: React.FC = () => {
   };
 
   function calcularDistancia(lat1:any, lon1:any, lat2:any, lon2:any) {
-    // Radio de la Tierra en kilómetros
     const radioTierra = 6371;
   
-    // Convertir las latitudes y longitudes de grados a radianes
     const latitud1Rad = (Math.PI / 180) * lat1;
     const longitud1Rad = (Math.PI / 180) * lon1;
     const latitud2Rad = (Math.PI / 180) * lat2;
     const longitud2Rad = (Math.PI / 180) * lon2;
   
-    // Diferencia de latitud y longitud
     const diferenciaLatitud = latitud2Rad - latitud1Rad;
     const diferenciaLongitud = longitud2Rad - longitud1Rad;
   
-    // Calcular la distancia utilizando la fórmula haversine
     const a =
       Math.sin(diferenciaLatitud / 2) ** 2 +
       Math.cos(latitud1Rad) *
@@ -120,9 +276,48 @@ const Menu: React.FC = () => {
     return distancia;
   }
 
-  useEffect(() => {
+  const authUser = () =>{
+    auth.onAuthStateChanged(async (usuarioActual) => {
+      if (usuarioActual) {
+        const email = usuarioActual.email;
 
-    const traerMascotas = async (activepet:any, id:any) => 
+        if (email) {
+          const usuarioss = collection(store,'usuarios')
+          const user = query(usuarioss, where("email", "==", email))
+          const querySnapshots = await getDocs(user)
+          if (!querySnapshots.empty) {
+              const doc = querySnapshots.docs[0];
+              const data = doc.data()
+              const { nombre, apellido, id, activepet } = data;
+              setDatosUsuario({ nombre, apellido, email, id, activepet });
+              if(activepet != '')
+              {
+                actualizarUbicación(activepet)
+                traerMascotas(activepet, id)
+              }
+              else
+              {
+                setIsLoading(false);
+                setHayMascotasDisponibles(false);
+              }
+            }
+          }
+      }
+    })
+  } 
+
+  const actualizarUbicación = async (activepet:any) => {
+  
+    const position = await Geolocation.getCurrentPosition();
+    const { latitude, longitude } = position.coords;
+    const mascotass = collection(store,'mascotas')
+    const pet = query(mascotass, where("idmascota", "==", activepet))
+    const querySnapshots = await getDocs(pet)
+    const doc = querySnapshots.docs[0]
+    await store.collection('mascotas').doc(doc.id).update({'latitud': latitude, 'longitud': longitude})
+  }
+
+  const traerMascotas = async (activepet:any, id:any) => 
     {
       const mascotasAgregadas = new Set();
       const mascotasFiltradasNuevas:Mascota[] = [];
@@ -133,8 +328,8 @@ const Menu: React.FC = () => {
       const datam = docm.data();
       const {latitud, longitud} = datam;
       const distanciaMascotaActual = {
-        latitud: latitud,// La latitud de la mascota actual,
-        longitud: longitud// La longitud de la mascota actual,
+        latitud: latitud,
+        longitud: longitud
       };
 
       const filtross = collection(store, 'filtros')
@@ -145,6 +340,7 @@ const Menu: React.FC = () => {
       const {distancia, edadMaxima, edadMinima, especie, raza, sexo} = data;
       const mascotas = collection(store, 'mascotas');
       const matchesc = collection(store, 'matchesfallidos');
+      const matchesp = collection(store, 'matchespendientes')
       const matchese = collection(store, 'matchesexitosos');
       try{
         const query1 = query(mascotas,
@@ -158,24 +354,23 @@ const Menu: React.FC = () => {
         const querySnapshot1 = await getDocs(query1);
 
         const mascotasFiltradass = querySnapshot1.docs.filter(doc => {
-          const {edad} = doc.data(); // Asumiendo que tienes un campo "edad" en tus documentos
+          const {edad} = doc.data(); 
           return edad >= edadMinima && edad <= edadMaxima;
         });
       
-
 
         mascotasFiltradass.forEach(async (doc) => {
           const mascota = doc.data();
           const distanciaf = Math.round(calcularDistancia(
             distanciaMascotaActual.latitud,
             distanciaMascotaActual.longitud,
-            mascota.latitud, // Latitud de la mascota en el documento
-            mascota.longitud // Longitud de la mascota en el documento
+            mascota.latitud, 
+            mascota.longitud 
           ));
 
           const querymf1 = query(matchesc,
-            where("idmascota1", "==", mascota.idmascota), // Compara con los IDs de las mascotas filtradas
-            where("idmascota2", "==", activepet) // Compara con el ID de la mascota actual
+            where("idmascota1", "==", mascota.idmascota), 
+            where("idmascota2", "==", activepet) 
           );
   
           const querymf2 = query(matchesc,
@@ -183,27 +378,31 @@ const Menu: React.FC = () => {
             where("idmascota1", "==", activepet)
           );
 
-          const queryme1 = query(matchesc,
-            where("idmascota1", "==", mascota.idmascota), // Compara con los IDs de las mascotas filtradas
-            where("idmascota2", "==", activepet) // Compara con el ID de la mascota actual
+          const queryme1 = query(matchese,
+            where("idmascota1", "==", mascota.idmascota), 
+            where("idmascota2", "==", activepet) 
           );
   
-          const queryme2 = query(matchesc,
+          const queryme2 = query(matchese,
             where("idmascota2", "==", mascota.idmascota),
             where("idmascota1", "==", activepet)
           );
-  
+
+          const querymp = query(matchesp,
+            where("idmascotaliker", "==", activepet))
+
           const querySnapshotmf1 = await getDocs(querymf1);
           const querySnapshotmf2 = await getDocs(querymf2);
           const querySnapshotme1 = await getDocs(queryme1);
           const querySnapshotme2 = await getDocs(queryme2);
+          const querySnapshotmp = await getDocs(querymp)
+          
 
           if (distanciaf <= distancia) {
-            const {idmascota, nombre, edad, especie, raza, sexo, descripcion, color} = mascota
-            // Agregar la mascota a la lista de mascotas filtradas si cumple con la distancia máxima
-            if(querySnapshotmf1.empty && querySnapshotmf2.empty && querySnapshotme1.empty && querySnapshotme2.empty && !mascotasAgregadas.has(idmascota)){
+            const {idmascota, nombre, edad, especie, raza, sexo, descripcion, color, imagenUrl, likesrecibidos} = mascota
+            if(querySnapshotmf1.empty && querySnapshotmf2.empty && querySnapshotme1.empty && querySnapshotme2.empty && querySnapshotmp.empty && !mascotasAgregadas.has(idmascota)){
               mascotasFiltradasNuevas.push({ ...mascota, id:idmascota, nombre:nombre, edad:edad, especie:especie,
-                raza:raza, sexo:sexo, descripcion:descripcion,color:color, distancia:distanciaf });
+                raza:raza, sexo:sexo, descripcion:descripcion,color:color, distancia:distanciaf, imagenUrl:imagenUrl, likesrec:likesrecibidos });
             }
             mascotasAgregadas.add(idmascota);
           }       
@@ -211,6 +410,15 @@ const Menu: React.FC = () => {
 
         setTimeout(() => {
           setMascotasFiltradas(mascotasFiltradasNuevas);
+            if(mascotasFiltradasNuevas.length == 0)
+            {
+              setHayMascotasDisponibles(false)
+            }
+            else
+            {
+              ordenarMascotas(mascotasFiltradasNuevas, activepet)
+              setButtons(true)
+            }
           setIsLoading(false);
         }, 5000)
         
@@ -220,29 +428,62 @@ const Menu: React.FC = () => {
       {
         console.log("No se encontraron mascotas! Error: ", e)
       }
-    }
+  }
 
-    const authUser = () =>{
-      auth.onAuthStateChanged(async (usuarioActual) => {
-        if (usuarioActual) {
-          const email = usuarioActual.email;
+  const ordenarMascotas =async (mascotasFiltradas:any, activepet:any) => {
+      
+      const sug = collection(store,'sugerencias')
+      const petcolor = query(sug, where("idmascota", "==", activepet))
+      const querySnapshotsc = await getDocs(petcolor)
+      const docc = querySnapshotsc.docs[0]
+      const {coloresLikes} = docc.data()   
+      const { xs: xsNuevasMascotas } = convertirDatosMascotasEnTensores(mascotasFiltradas, coloresLikes);
+      const modeloCargado = await tf.loadLayersModel('/assets/modelo.json');
 
-          if (email) {
-            const usuarioss = collection(store,'usuarios')
-            const user = query(usuarioss, where("email", "==", email))
-            const querySnapshots = await getDocs(user)
-            if (!querySnapshots.empty) {
-                const doc = querySnapshots.docs[0];
-                const data = doc.data()
-                const { nombre, apellido, id, activepet } = data;
-                setDatosUsuario({ nombre, apellido, email, id, activepet });
-                traerMascotas(activepet, id)
-              }
-            }
-        }
-      })
-    } 
-    authUser();
+      const recomendaciones = modeloCargado.predict(xsNuevasMascotas) as tf.Tensor;
+
+      // Obtiene las puntuaciones de recomendación como un arreglo
+      const puntuaciones = recomendaciones.arraySync() as number[];
+
+      // Ordena las nuevas mascotas en función de las puntuaciones
+      return mascotasFiltradas.sort((a:any, b:any) => puntuaciones[mascotasFiltradas.indexOf(b)] - puntuaciones[mascotasFiltradas.indexOf(a)]);
+  }
+
+  function convertirDatosMascotasEnTensores(mascotas:any, coloresLikes:any) {
+    const xs: number[][] = []; // Anotación de tipo explícita
+    const ys: number[][] = []; // Anotación de tipo explícita
+
+    mascotas.forEach((mascota:any) => {
+      const coloresCodificados = coloresLikes.map((colorLike:any) =>
+        mascota.color.includes(colorLike.color) ? 1 : 0
+      );
+      xs.push(coloresCodificados);
+      ys.push([calcularPuntuacion(mascota, coloresLikes)]);
+    });
+
+    const numFilas = xs.length;
+    const numColumnas = coloresLikes.length;
+  
+    return {
+      xs: tf.tensor2d(xs, [numFilas, numColumnas]),
+      ys: tf.tensor2d(ys, [numFilas, 1]),
+    };
+  }
+
+  function calcularPuntuacion(mascota:any, coloresLikes:any) {
+    return mascota.likesrec + coloresLikes.reduce((total:any, colorLike:any) => {
+      const tieneColor = mascota.color.includes(colorLike.color);
+      return total + (tieneColor ? colorLike.likesrec : 0);
+    }, 0);
+  }
+
+
+  useIonViewWillEnter (() => {
+    authUser();   
+  })
+
+  useEffect(() => {
+    console.log("e");
   }, []);
 
   return (
@@ -276,40 +517,71 @@ const Menu: React.FC = () => {
           </IonHeader>
           <Perfil datosUsuario={datosUsuario} onClose={cerrarModalmp} />
         </IonModal>
-  
+
+      <IonAlert
+      isOpen={showMatchPopup}
+      onDidDismiss={() => setShowMatchPopup(false)}
+      header="¡Match exitoso!"
+      message= {mensajeMatch}
+      buttons={['OK']}/>
+      
       <div className='generic'>
+        {isLoading ? (
+        <div className='loading'>
+          <IonSpinner color={'primary'}></IonSpinner>
+          <br></br>
+          <br></br>
+          <p>Buscando mascotas cerca de tu zona...</p>
+        </div>
+        )
+        : 
+        (
           <div className='cardContainer generic'>
-            {hayMascotasDisponibles ? 
-            (mascotasFiltradas.slice(currentPetIndex, currentPetIndex + 1).map((character) =>
-              <TinderCard className='swipe generic' key={character.nombre} 
-              onSwipe={(dir) => 
-                {swiped(dir, character.nombre);
-                  if (currentPetIndex + 1 === mascotasFiltradas.length) {
-                    setHayMascotasDisponibles(false);
-                  }
-                }}
-              onCardLeftScreen={() => outOfFrame(character.nombre)} 
-              preventSwipe={['up', 'down']}>
-                <div style={{ backgroundImage: 'url(' + firulais + ')' }} className='card'></div>
-              </TinderCard>)):
-              (
-                <div>No hay más mascotas disponibles.</div>
-              )
-            }
+          {hayMascotasDisponibles ? 
+          (mascotasFiltradas.slice(currentPetIndex, currentPetIndex + 1).map((character) =>
+            <TinderCard className='swipe generic' key={character.nombre} 
+            onSwipe={(dir) => 
+              {swiped(dir, character.nombre);
+                if (currentPetIndex + 1 === mascotasFiltradas.length) {
+                  setHayMascotasDisponibles(false);
+                }
+              }}
+            onCardLeftScreen={() => outOfFrame(character.nombre)} 
+            preventSwipe={['up', 'down']}>
+              <div style={{ backgroundImage: `url(${character.imagenUrl ? character.imagenUrl : firulais})`}} className='card'></div>
+            </TinderCard>)):
+            (
+              <div className='nopets'>
+                <IonImg src={triste}></IonImg>
+                <p className='text'>No hay más mascotas disponibles. Prueba cambiando los filtros.</p>
+              </div>
+            )
+          }
           </div>
-          {lastDirection ? <h2 className='infoText'>You swiped {lastDirection}</h2> : <h2 className='infoText' />}  
-        </div>       
-        <div className='buttons'>
-          <IonButton shape='round' color={'danger'} size='large' onClick={handleSwipeLeft}>
-            <IonIcon aria-hidden="true" icon={closeSharp}/>
-          </IonButton>
-          <IonButton shape='round' color={'success'} size='large' className='likebutton' onClick={handleSwipeRight}>
-            <IonIcon aria-hidden="true" icon={heartSharp} />
-          </IonButton>
-      </div>
+        )}
+
+        {lastDirection ? <h2 className='infoText'>You swiped {lastDirection}</h2> : <h2 className='infoText' />}  
+        </div>
+
+        {
+          buttons ? (        
+          <div className='buttons'>
+            <IonButton shape='round' color={'danger'} size='large' onClick={handleSwipeLeft}>
+              <IonIcon aria-hidden="true" icon={closeSharp}/>
+            </IonButton>
+            <IonButton shape='round' color={'success'} size='large' className='likebutton' onClick={handleSwipeRight}>
+              <IonIcon aria-hidden="true" icon={heartSharp} />
+            </IonButton>
+          </div>) 
+          : 
+          (
+          <span></span>
+          )
+        }       
+
       <div>
           {isLoading ? (
-            <div>Cargando datos...</div>
+            <span></span>
           ) : (
             <div> 
               {
@@ -319,7 +591,34 @@ const Menu: React.FC = () => {
                     <IonCardTitle>{mascotasFiltradas[currentPetIndex].nombre}, {mascotasFiltradas[currentPetIndex].edad} años</IonCardTitle>
                     <IonCardSubtitle>{mascotasFiltradas[currentPetIndex].distancia} Km</IonCardSubtitle>
                   </IonCardHeader>
-                  <IonCardContent>{mascotasFiltradas[currentPetIndex].descripcion}</IonCardContent>
+                  <IonCardContent>
+                    <div>
+                      <IonBadge style={{ marginRight: '4px' }} color={speciesColors[mascotasFiltradas[currentPetIndex].especie]}>
+                        {mascotasFiltradas[currentPetIndex].especie}
+                      </IonBadge>
+                      <IonBadge style={{ '--background': raceColors[mascotasFiltradas[currentPetIndex].especie], marginRight: '4px' }}>
+                        {mascotasFiltradas[currentPetIndex].raza}
+                      </IonBadge>
+                      <IonBadge className={mascotasFiltradas[currentPetIndex].sexo === 'Macho' ? 'macho' : 'hembra'}>
+                        {mascotasFiltradas[currentPetIndex].sexo}
+                        <IonIcon style={{ marginLeft: '3px' }} icon={mascotasFiltradas[currentPetIndex].sexo === 'Masculino' ? femaleSharp : maleSharp} />
+                      </IonBadge>
+                    </div>
+                    <hr className="divider" />
+                    <div className='section'>
+                      <h1 className="section-title">Descripción</h1>
+                      <p style={{ marginBottom: '10px' }}>{mascotasFiltradas[currentPetIndex].descripcion}</p>
+                    </div>
+                    <hr className="divider" />
+                    <div className='section'>
+                      <h1 className="section-title">Colores</h1>
+                      {mascotasFiltradas[currentPetIndex].color.map((color, index) => (
+                        <IonChip key={index} style={{ '--background': coloresMap[color].background, color: coloresMap[color].text }}>
+                          <IonLabel><b>{color}</b></IonLabel>
+                        </IonChip>
+                      ))}
+                    </div>
+                  </IonCardContent>
                 </IonCard>
                 )
                 :

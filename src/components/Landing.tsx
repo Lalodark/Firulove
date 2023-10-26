@@ -1,7 +1,7 @@
 import React from 'react';
+
 import { IonContent, IonImg, IonPage, IonButton } from '@ionic/react';
-import Login from './Login';
-import Register from './Register';
+
 import './Landing.css'
 import logo from '../images/logofirulove2.png'
 import letra from  '../images/logoletras.png'
