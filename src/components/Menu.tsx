@@ -15,7 +15,6 @@ import Perfil from './Perfil';
 import { auth, store } from '../firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
 
-
 import './Menu.css'
 import logo from '../images/logofirulove2.png'
 import firulais from '../images/firulais.jpg'
@@ -24,10 +23,22 @@ import triste from '../images/Triste.png'
 import * as tf from '@tensorflow/tfjs';
 
 
+// Definir el tipo para window.googletag
+declare global {
+  interface Window {
+    googletag: {
+      cmd: ((callback: () => void) => void)[];
+      companionAds?: any;
+      defineOutOfPageSlot?: any;
+      defineSlot?: any;
+      defineUnit?: any;
+      // Agrega todas las propiedades necesarias aquí
+    };
+  }
+}
 const Menu: React.FC = () => {
 
   //Variables & Declaraciones
-  
   const [lastDirection, setLastDirection] = useState('')
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: '',
@@ -37,6 +48,7 @@ const Menu: React.FC = () => {
     activepet:''
   });
 
+  
   interface Mascota {
     id:string,
     nombre:string,
@@ -79,7 +91,7 @@ const Menu: React.FC = () => {
     Blanco: { background: 'rgb(255, 255, 255)', text: 'rgb(0, 0, 0)' },
     Negro: { background: 'rgb(0, 0, 0)', text: 'rgb(255, 255, 255)' },
     Gris: { background: 'rgb(169, 169, 169)', text: 'rgb(0, 0, 0)' },
-    Marrón: { background: 'rgb(139, 69, 19)', text: 'rgb(255, 255, 255)' },
+    Marron: { background: 'rgb(139, 69, 19)', text: 'rgb(255, 255, 255)' },
     Naranja: { background: 'rgb(255, 165, 0)', text: 'rgb(0, 0, 0)' },
     Amarillo: { background: 'rgb(255, 255, 0)', text: 'rgb(0, 0, 0)' },
     Atigrado: { background: 'rgb(128, 0, 0)', text: 'rgb(255, 255, 255)' },
@@ -89,7 +101,6 @@ const Menu: React.FC = () => {
     Verde: { background: 'rgb(0, 128, 0)', text: 'rgb(255, 255, 255)' },
   };
   
-
   const [mascotasFiltradas, setMascotasFiltradas] = useState<Mascota[]>([]);
   const [currentPetIndex, setCurrentPetIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
@@ -103,6 +114,7 @@ const Menu: React.FC = () => {
   const [mostrarModalmp, setMostrarModalmp] = useState(false);
   const [showMatchPopup, setShowMatchPopup] = useState(false);
   const [mensajeMatch, setMensajeMatch] = useState<string>('')
+  const [displayAd, setDisplayAd] = useState(false);
   //Funciones
   
   const swiped = (direction:string, nameToDelete:string) => {
@@ -477,13 +489,21 @@ const Menu: React.FC = () => {
     }, 0);
   }
 
-
   useIonViewWillEnter (() => {
-    authUser();   
+    authUser();
+    setDisplayAd(true)
   })
 
   useEffect(() => {
-    console.log("e");
+    // Código de configuración de anuncio
+    window.googletag.cmd.push(function() {
+      window.googletag.display('div-gpt-ad-123456789-0');
+    });
+
+    // Activa la carga de anuncios
+    window.googletag.cmd.push(function() {
+      window.googletag.enableServices();
+    });
   }, []);
 
   return (
@@ -577,7 +597,12 @@ const Menu: React.FC = () => {
           (
           <span></span>
           )
-        }       
+        }
+
+    <em className='ad centrar-texto'>Anuncio</em>
+    <div id="div-gpt-ad-123456789-0" style={{ width: '300px', height: '250px' }} className='ad'>
+    </div>
+    
 
       <div>
           {isLoading ? (
@@ -613,9 +638,9 @@ const Menu: React.FC = () => {
                     <div className='section'>
                       <h1 className="section-title">Colores</h1>
                       {mascotasFiltradas[currentPetIndex].color.map((color, index) => (
-                        <IonChip key={index} style={{ '--background': coloresMap[color].background, color: coloresMap[color].text }}>
-                          <IonLabel><b>{color}</b></IonLabel>
-                        </IonChip>
+                         <IonChip key={index} style={{ '--background': coloresMap[color].background, color: coloresMap[color].text }}>
+                           <IonLabel><b>{color}</b></IonLabel>
+                         </IonChip>
                       ))}
                     </div>
                   </IonCardContent>

@@ -29,6 +29,10 @@
   margin-bottom: -10px;
 }
 
+.ancho {
+  max-width: 420px;
+}
+
 .swipe {
   position: absolute;
 }
@@ -54,6 +58,17 @@
   margin: auto;
   margin-top: 350px;
   text-align: center;
+}
+
+.ad {
+  width: 50%; /* O cualquier otro ancho deseado */
+  margin: 0 auto;
+  text-align: center;
+}
+
+.centrar-texto {
+  display: block; /* Para que el texto ocupe todo el ancho disponible */
+  color: #808080;
 }
 
 .card {

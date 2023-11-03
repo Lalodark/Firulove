@@ -1,5 +1,14 @@
 package io.ionic.starter;
 
 import com.getcapacitor.BridgeActivity;
+import app.xplatform.capacitor.plugins.AdMob;
 
-public class MainActivity extends BridgeActivity {}
+public class MainActivity extends BridgeActivity {
+  @Override
+  public void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    this.init(savedInstanceState, new ArrayList<Class<? extends Plugin>>() {{
+      add(AdMob.class);  // Add AdMob as a Capacitor Plugin
+    }});
+  }
+}
