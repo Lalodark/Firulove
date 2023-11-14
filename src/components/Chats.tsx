@@ -215,7 +215,7 @@ const Chats: React.FC = () => {
       setTimeout(() => {
         mascotasFiltradasNuevas.sort((a, b) => compararPorTimestamp(a, b));
         setMascotasMensajes(mascotasFiltradasNuevas);
-      }, 5000)
+      }, 3500)
     }
     else{
       setHayMascotas(false)

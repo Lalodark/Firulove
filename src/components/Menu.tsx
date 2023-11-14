@@ -13,7 +13,7 @@ import Filtros from './Filtros';
 import Perfil from './Perfil';
 
 import { auth, store } from '../firebase'
-import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
+import { collection, query, where, getDocs, deleteDoc, doc, Timestamp } from "firebase/firestore";
 
 import './Menu.css'
 import logo from '../images/logofirulove2.png'
@@ -40,12 +40,16 @@ const Menu: React.FC = () => {
 
   //Variables & Declaraciones
   const [lastDirection, setLastDirection] = useState('')
+  let rewardedSlot: googletag.Slot|null;
+
   const [datosUsuario, setDatosUsuario] = useState({
     nombre: '',
     apellido: '',
     email: '',
     id:'',
-    activepet:''
+    activepet:'',
+    likes: 0,
+    dayLikes: Timestamp.now()
   });
 
   
@@ -104,6 +108,7 @@ const Menu: React.FC = () => {
   const [mascotasFiltradas, setMascotasFiltradas] = useState<Mascota[]>([]);
   const [currentPetIndex, setCurrentPetIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [doc_id, setDocId] = useState('')
   const [hayMascotasDisponibles, setHayMascotasDisponibles] = useState(true);
   const [buttons, setButtons] = useState(false);
 
@@ -115,6 +120,8 @@ const Menu: React.FC = () => {
   const [showMatchPopup, setShowMatchPopup] = useState(false);
   const [mensajeMatch, setMensajeMatch] = useState<string>('')
   const [displayAd, setDisplayAd] = useState(false);
+  const [showAdAlert, setShowAdAlert] = useState(false);
+  const [showRewardAlert, setShowRewardAlert] = useState(false);
   //Funciones
   
   const swiped = (direction:string, nameToDelete:string) => {
@@ -227,7 +234,6 @@ const Menu: React.FC = () => {
     console.log(name + ' left the screen!')
   }
 
-
   const handleSwipeLeft = () => {
     const card = document.querySelector('.swipe.generic') as HTMLElement;
     if (card) {
@@ -241,14 +247,63 @@ const Menu: React.FC = () => {
 
   const handleSwipeRight = () => {
     const card = document.querySelector('.swipe.generic') as HTMLElement;
-    if (card) {
+    if (card && datosUsuario.likes > 0) {
+      datosUsuario.likes -= 1;
+      store.collection('usuarios').doc(doc_id).update({'likes': datosUsuario.likes })
       card.style.animation = 'swipe-right 0.3s ease-in-out';
       setTimeout(() => {
         swiped('right', mascotasFiltradas[currentPetIndex].nombre); 
         card.style.animation = ''; 
       }, 400); 
     }
+    else
+    {
+      setShowAdAlert(true);
+    }
   };
+
+  const showAd = () => {
+    window.googletag = window.googletag || { cmd: [] };
+
+    let rewardedSlot: googletag.Slot | null;
+
+    window.googletag.cmd.push(() => {
+      rewardedSlot = googletag.defineOutOfPageSlot(
+        '/22639388115/rewarded_web_example',
+        googletag.enums.OutOfPageFormat.REWARDED
+      );
+
+      if (rewardedSlot) {
+        rewardedSlot.addService(googletag.pubads());
+
+        googletag.pubads().addEventListener('rewardedSlotReady', (event) => {
+          event.makeRewardedVisible();
+        });
+
+        googletag.pubads().addEventListener('rewardedSlotClosed', (event) => {
+          // Automatically close the ad by destroying the slot.
+          // Remove this to force the user to close the ad themselves.
+          if(rewardedSlot){
+            googletag.destroySlots([rewardedSlot]);
+          }
+          
+        });
+
+        googletag.pubads().addEventListener('rewardedSlotGranted', async (event) => {
+          if(rewardedSlot){
+            googletag.destroySlots([rewardedSlot]);
+          }
+          setShowRewardAlert(true)
+          datosUsuario.likes += 5;
+          await store.collection('usuarios').doc(doc_id).update({'likes': datosUsuario.likes })
+        });
+
+          
+        googletag.enableServices();
+        googletag.display(rewardedSlot);
+      }
+    });
+  }
 
   const abrirModalmp = () => {
     setMostrarModalmp(true);
@@ -300,12 +355,14 @@ const Menu: React.FC = () => {
           if (!querySnapshots.empty) {
               const doc = querySnapshots.docs[0];
               const data = doc.data()
-              const { nombre, apellido, id, activepet } = data;
-              setDatosUsuario({ nombre, apellido, email, id, activepet });
+              const { nombre, apellido, id, activepet, likes, dayLikes } = data;
+              setDocId(doc.id)
+              setDatosUsuario({ ...datosUsuario, nombre, apellido, email, id, activepet, likes, dayLikes });
               if(activepet != '')
               {
                 actualizarUbicación(activepet)
                 traerMascotas(activepet, id)
+                actualizarLikes(dayLikes, doc.id)
               }
               else
               {
@@ -329,6 +386,26 @@ const Menu: React.FC = () => {
     await store.collection('mascotas').doc(doc.id).update({'latitud': latitude, 'longitud': longitude})
   }
 
+  const actualizarLikes = async (dayLikes:any, docid:any) => {
+      const fechaActual = new Date();
+      const fechaAnterior = new Date(dayLikes.toMillis());
+
+      const diaActual = fechaActual.getDate();
+      const mesActual = fechaActual.getMonth() + 1;
+      const anioActual = fechaActual.getFullYear();
+      
+      const diaAnterior = fechaAnterior.getDate();
+      const mesAnterior = fechaAnterior.getMonth() + 1;
+      const anioAnterior = fechaAnterior.getFullYear();
+      
+      if (anioActual === anioAnterior && mesActual === mesAnterior && diaActual === diaAnterior) {
+        console.log("Las fechas son iguales, no hay likes");
+      } else {
+        await store.collection('usuarios').doc(docid).update({'dayLikes': Timestamp.now() })
+        await store.collection('usuarios').doc(docid).update({'likes': 15 })
+      }
+  }
+  
   const traerMascotas = async (activepet:any, id:any) => 
     {
       const mascotasAgregadas = new Set();
@@ -343,7 +420,7 @@ const Menu: React.FC = () => {
         latitud: latitud,
         longitud: longitud
       };
-
+      
       const filtross = collection(store, 'filtros')
       const filtro = query(filtross, where("idmascota", "==", activepet)) 
       const queryfiltro = await getDocs(filtro)
@@ -369,7 +446,6 @@ const Menu: React.FC = () => {
           const {edad} = doc.data(); 
           return edad >= edadMinima && edad <= edadMaxima;
         });
-      
 
         mascotasFiltradass.forEach(async (doc) => {
           const mascota = doc.data();
@@ -401,7 +477,8 @@ const Menu: React.FC = () => {
           );
 
           const querymp = query(matchesp,
-            where("idmascotaliker", "==", activepet))
+            where("idmascotaliker", "==", activepet),
+            where("idmascotapending", "==", mascota.idmascota))
 
           const querySnapshotmf1 = await getDocs(querymf1);
           const querySnapshotmf2 = await getDocs(querymf2);
@@ -497,7 +574,7 @@ const Menu: React.FC = () => {
   useEffect(() => {
     // Código de configuración de anuncio
     window.googletag.cmd.push(function() {
-      window.googletag.display('div-gpt-ad-123456789-0');
+      window.googletag.display('div-gpt-ad-123456789-0'); //
     });
 
     // Activa la carga de anuncios
@@ -603,6 +680,44 @@ const Menu: React.FC = () => {
     <div id="div-gpt-ad-123456789-0" style={{ width: '300px', height: '250px' }} className='ad'>
     </div>
     
+    
+      <IonAlert
+        isOpen={showAdAlert}
+        header="¡Sin Likes!"
+        message="¡Te has quedado sin likes! ¿Deseas ver una publicidad para obtener más?"
+        buttons={[
+          {
+            text: 'Cancelar',
+            role: 'cancel',
+            handler: () => {
+              console.log('Publicidad cancelada');
+              setShowAdAlert(false);
+            },
+          },
+          {
+            text: 'Ver',
+            role: 'confirm',
+            handler: () => {
+              showAd()
+              setShowAdAlert(false);
+            },
+          },
+        ]}
+      ></IonAlert>
+
+      <IonAlert
+        isOpen={showRewardAlert}
+        message="¡Has obtenido más likes!"
+        buttons={[
+          {
+            text: 'Ok',
+            role: 'confirm',
+            handler: () => {
+              setShowRewardAlert(false);
+            },
+          },
+        ]}
+      ></IonAlert>
 
       <div>
           {isLoading ? (

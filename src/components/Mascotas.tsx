@@ -95,17 +95,7 @@ const Mascotas: React.FC = () => {
           const querySnapshots = await getDocs(user)
           if (!querySnapshots.empty) {
               const doc = querySnapshots.docs[0];
-              const data = doc.data()
-              const {apellido, email, fecha, id, nombre } = data;
-              const userr = {
-                nombre:nombre,
-                apellido:apellido,
-                fecha:fecha,
-                email:email,
-                id:id,
-                activepet:nuevoac
-              }
-              await store.collection('usuarios').doc(doc.id).set(userr)
+              await await store.collection('usuarios').doc(doc.id).update({'activepet': nuevoac })
           }}})
 
       const filtross = collection(store, 'filtros')
@@ -171,17 +161,7 @@ const Mascotas: React.FC = () => {
         const querySnapshots = await getDocs(user)
         if (!querySnapshots.empty) {
             const doc = querySnapshots.docs[0];
-            const data = doc.data()
-            const {apellido, email, fecha, id, nombre } = data;
-            const userr = {
-              nombre:nombre,
-              apellido:apellido,
-              fecha:fecha,
-              email:email,
-              id:id,
-              activepet:idpet
-            }
-            await store.collection('usuarios').doc(doc.id).set(userr)
+            await store.collection('usuarios').doc(doc.id).update({'activepet': idpet })
             history.push('/menu')
             location.reload()
     }}})

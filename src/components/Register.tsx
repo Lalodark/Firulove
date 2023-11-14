@@ -6,6 +6,7 @@ IonPopover, IonText, useIonToast, IonHeader } from '@ionic/react';
 import { alertCircleOutline } from 'ionicons/icons';
 
 import { auth, store } from '../firebase'
+import { Timestamp } from "firebase/firestore";
 
 import { format } from 'date-fns';
 import uniqid from 'uniqid';
@@ -25,7 +26,7 @@ const Register: React.FC = () => {
   const[pass, setPass] = useState<string>('')
   const[rpass, setRpass] = useState<string>('')
   const[msgerror, setMsgError] = useState<string>('')
-
+  const dia = Timestamp.now()
   //Funciones
 
   const handleFechaChange = (e: CustomEvent) => {
@@ -90,7 +91,9 @@ const Register: React.FC = () => {
           apellido:apellido,
           fecha:formatDate(fecha),
           email:email,
-          activepet:''
+          activepet:'',
+          dayLikes: dia,
+          likes: 15
         }
         try{
           await store.collection('usuarios').add(usuario)
@@ -112,7 +115,7 @@ const Register: React.FC = () => {
           setMsgError('La contraseña debe tener 6 carácteres o más.')
           presentToast()
         }
-        if(error.code == 'auth/email-already-exists')
+        if(error.code == 'auth/email-already-in-use')
         {
           setMsgError('El Email ingresado ya se encuentra en uso.')
           presentToast()

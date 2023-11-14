@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useHistory } from 'react-router-dom';
 
 import { IonContent, IonPage, IonButton, IonHeader, IonToolbar, IonIcon, IonButtons, IonList,
-IonItem, IonInput, IonFooter, IonAvatar, IonImg, IonAlert, useIonViewWillEnter } from '@ionic/react';
+IonItem, IonInput, IonFooter, IonAvatar, IonImg, IonAlert, useIonViewWillEnter, useIonLoading } from '@ionic/react';
 import { chevronBackOutline, flagOutline } from 'ionicons/icons';
 
 import { auth, store } from '../firebase'
@@ -25,6 +26,8 @@ const Chat_Personal: React.FC = () => {
     timestamp:Timestamp
   }
 
+  const history = useHistory();
+  const [presentload, dismiss] = useIonLoading();
   const [activePet, setActivePet] = useState<string>('')
   const [chatId, setChatId] = useState<any>('')
   const [petId, setPetId] = useState<any>('')
@@ -40,6 +43,13 @@ const Chat_Personal: React.FC = () => {
   });
 
   //Funciones
+
+  const presentLoading = () => {
+    presentload({
+      message: 'Cargando chat',
+      duration: 4500,
+    })
+  }
 
   const enviarMensaje = async () => {
     if(mensajeEnviar)
@@ -86,6 +96,7 @@ const Chat_Personal: React.FC = () => {
     }
     await store.collection('matchesfallidos').add(matchf)
     await deleteDoc(doc(store, 'matchesexitosos', docsm.id));
+    history.push('/chats')
   }
 
   const goBack = () => {
@@ -122,6 +133,7 @@ const Chat_Personal: React.FC = () => {
 
   const traerMensajes = async (chat:any, pet:any) => {
 
+    presentLoading();
     const maschat = collection(store, 'mascotas')
     const petshow = query(maschat, where("idmascota", "==", pet))
     const querySnapshotsm = await getDocs(petshow)
@@ -151,7 +163,7 @@ const Chat_Personal: React.FC = () => {
         setHayMensajes(false);
       }
       setIsLoading(false);
-      }, 5000)
+      }, 3500)
     }
     else{
       setDatosMascota({idmascota, nombre, imagenUrl})
