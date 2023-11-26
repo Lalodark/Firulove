@@ -23,7 +23,6 @@ import triste from '../images/Triste.png'
 import * as tf from '@tensorflow/tfjs';
 
 
-// Definir el tipo para window.googletag
 declare global {
   interface Window {
     googletag: {
@@ -32,7 +31,6 @@ declare global {
       defineOutOfPageSlot?: any;
       defineSlot?: any;
       defineUnit?: any;
-      // Agrega todas las propiedades necesarias aquí
     };
   }
 }
@@ -64,7 +62,7 @@ const Menu: React.FC = () => {
     color : string[],
     distancia:number,
     imagenUrl:string,
-    likesrec: number
+    likesrecibidos: number
   }
 
 // Define un objeto de mapeo para los colores de especie
@@ -158,7 +156,7 @@ const Menu: React.FC = () => {
     const data = docl.data();
     const {nombre} = data;
     const mascotasFiltradasPorId = mascotasFiltradas.filter((mascota) => mascota.id === id)
-    const likes = mascotasFiltradasPorId[0].likesrec + 1;
+    const likes = mascotasFiltradasPorId[0].likesrecibidos + 1;
     await store.collection('mascotas').doc(docl.id).update({'likesrecibidos': likes})
 
 
@@ -491,7 +489,7 @@ const Menu: React.FC = () => {
             const {idmascota, nombre, edad, especie, raza, sexo, descripcion, color, imagenUrl, likesrecibidos} = mascota
             if(querySnapshotmf1.empty && querySnapshotmf2.empty && querySnapshotme1.empty && querySnapshotme2.empty && querySnapshotmp.empty && !mascotasAgregadas.has(idmascota)){
               mascotasFiltradasNuevas.push({ ...mascota, id:idmascota, nombre:nombre, edad:edad, especie:especie,
-                raza:raza, sexo:sexo, descripcion:descripcion,color:color, distancia:distanciaf, imagenUrl:imagenUrl, likesrec:likesrecibidos });
+                raza:raza, sexo:sexo, descripcion:descripcion,color:color, distancia:distanciaf, imagenUrl:imagenUrl, likesrecibidos:likesrecibidos });
             }
             mascotasAgregadas.add(idmascota);
           }       
@@ -519,7 +517,7 @@ const Menu: React.FC = () => {
       }
   }
 
-  const ordenarMascotas =async (mascotasFiltradas:any, activepet:any) => {
+  const ordenarMascotas = async (mascotasFiltradas:any, activepet:any) => {
       
       const sug = collection(store,'sugerencias')
       const petcolor = query(sug, where("idmascota", "==", activepet))
@@ -527,43 +525,49 @@ const Menu: React.FC = () => {
       const docc = querySnapshotsc.docs[0]
       const {coloresLikes} = docc.data()   
       const { xs: xsNuevasMascotas } = convertirDatosMascotasEnTensores(mascotasFiltradas, coloresLikes);
+      console.log('Forma de xsNuevasMascotas:', xsNuevasMascotas.shape);
+      console.log('Datos de entrada para predicción:', xsNuevasMascotas.arraySync());
+
       const modeloCargado = await tf.loadLayersModel('/assets/modelo.json');
-
+      
       const recomendaciones = modeloCargado.predict(xsNuevasMascotas) as tf.Tensor;
-
+      
       // Obtiene las puntuaciones de recomendación como un arreglo
       const puntuaciones = recomendaciones.arraySync() as number[];
 
       // Ordena las nuevas mascotas en función de las puntuaciones
-      return mascotasFiltradas.sort((a:any, b:any) => puntuaciones[mascotasFiltradas.indexOf(b)] - puntuaciones[mascotasFiltradas.indexOf(a)]);
+      console.log(mascotasFiltradas.sort((a:any, b:any) => puntuaciones[mascotasFiltradas.indexOf(b)] - puntuaciones[mascotasFiltradas.indexOf(a)]))
+      setMascotasFiltradas(mascotasFiltradas.sort((a:any, b:any) => puntuaciones[mascotasFiltradas.indexOf(b)] - puntuaciones[mascotasFiltradas.indexOf(a)]));
   }
 
   function convertirDatosMascotasEnTensores(mascotas:any, coloresLikes:any) {
-    const xs: number[][] = []; // Anotación de tipo explícita
-    const ys: number[][] = []; // Anotación de tipo explícita
-
-    mascotas.forEach((mascota:any) => {
-      const coloresCodificados = coloresLikes.map((colorLike:any) =>
+    const xs: number[][] = [];
+    const ys: number[][] = [];
+  
+    mascotas.forEach((mascota: any) => {
+      const coloresCodificados = coloresLikes.map((colorLike: any) =>
         mascota.color.includes(colorLike.color) ? 1 : 0
       );
-      xs.push(coloresCodificados);
-      ys.push([calcularPuntuacion(mascota, coloresLikes)]);
+      const features = [...coloresCodificados, mascota.likesrecibidos]; // Solo incluir las codificaciones de colores y los "likes" de las mascotas
+      xs.push(features);
+      ys.push([calcularPuntuacion(features, coloresLikes)]);
     });
-
-    const numFilas = xs.length;
-    const numColumnas = coloresLikes.length;
   
+    const numFilas = xs.length;
+    const numColumnas = coloresLikes.length + 1; // Suma 1 para los "likes" de las mascotas
+    
     return {
       xs: tf.tensor2d(xs, [numFilas, numColumnas]),
       ys: tf.tensor2d(ys, [numFilas, 1]),
     };
   }
 
-  function calcularPuntuacion(mascota:any, coloresLikes:any) {
-    return mascota.likesrec + coloresLikes.reduce((total:any, colorLike:any) => {
-      const tieneColor = mascota.color.includes(colorLike.color);
-      return total + (tieneColor ? colorLike.likesrec : 0);
+  function calcularPuntuacion(features:any[], coloresLikes:any) {
+    const likesMascotas = features[coloresLikes.length + 1];
+    const likesColores = coloresLikes.reduce((total: any, colorLike: any, index: number) => {
+      return total + (features[index] ? colorLike.likes : 0);
     }, 0);
+    return likesMascotas + likesColores;
   }
 
   useIonViewWillEnter (() => {

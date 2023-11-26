@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { IonContent, IonLabel, IonButton, IonItem, IonHeader, IonToolbar, IonRange, IonSelect, IonSelectOption,
-IonButtons,IonTitle, useIonViewWillEnter } from '@ionic/react';
+IonButtons,IonTitle, useIonViewWillEnter, IonSearchbar } from '@ionic/react';
 
 import { auth, store } from '../firebase'
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -14,51 +14,47 @@ const Filtros: React.FC <{onClose: () => void }> = ({
 
   const[Especie, setEspecie] = useState<string>('')
   const[Raza, setRaza] = useState<string>('')
+  const [filtroRaza, setFiltroRaza] = useState<string>('');
+  
   const[sexo, setSexo] = useState<string>('')
   const[distancia, setDistancia] = useState<number>()
   const[edadMinima, setEdadMinima] = useState<number>(5)
   const[edadMaxima, setEdadMaxima] = useState<number>(9)
 
   const opcionesRazaPorEspecie: Record<string, string[]> = {
-    Perro: ['Labrador Retriever', 'Pastor Alemán', 'Golden Retriever', 'Bulldog', 'Beagle', 'Caniche', 'Rottweiler',
-     'Yorkshire Terrier', 'Boxer', 'Teckel', 'Siberian Husky', 'Bulldog Francés', 'Pug', 'Border Collie', 
-     'Shih Tzu', 'Gran Danés', 'Australian Shepherd', 'Doberman Pinscher', 'Shiba Inu', 'Chihuahua', 'Cocker Spaniel', 
-     'Boston Terrier', 'Miniature Schnauzer', 'Bichon Frise', 'Scottish Terrier', 'Papillon', 'Bichón Maltés', 
-     'Staffordshire Bull Terrier', 'Pomeranian (Pomerania)', 'Rhodesian Ridgeback', 'Weimaraner', 'Basset Hound', 'Terranova', 
-     'Shetland Sheepdog', 'Bullmastiff', 'Samoyedo', 'Poodle Miniatura', 'Irish Setter', 'Dálmata', 'Alaskan Malamute', 'Pembroke Welsh Corgi', 
-     'Chinese Shar-Pei', 'Belgian Malinois', 'Perro de Agua Portugués', 'Cavalier King Charles Spaniel', 'American Staffordshire Terrier', 
-     'Australian Terrier', 'Norwegian Elkhound', 'Bloodhound', 'Westie', 'Akita', 'Whippet', 'Cairn Terrier', 'American Bulldog', 
-     'Chow Chow', 'Saluki', 'Tibetan Mastiff', 'Afghan Hound', 'Basenji', 'Otro'],
-    Gato: [ 'Persa', 'Siamesa', 'Maine Coon', 'Ragdoll', 'British Shorthair', 'Sphynx', 'Abisinio', 'Scottish Fold', 'Bengal', 'Birmana', 'Korat', 
-    'Devon Rex', 'Cornish Rex', 'American Shorthair', 'Oriental Shorthair', 'Exótico de Pelo Corto', 'Tonkinés', 'Manx', 'Siamés Moderno', 'Peterbald', 
-    'Bombay', 'Azul Ruso', 'Somali', 'Angora Turco', 'Burmés', 'Noruego del Bosque', 'Neva Masquerade', 'American Curl', 'Selkirk Rex', 'LaPerm', 
-    'Singapura', 'Selkirk Rex', 'Sokoke', 'Khao Manee', 'American Wirehair', 'Chartreux', 'Mau Egipcio', 'Australian Mist', 'Munchkin', 'Highlander',
-     'Skookum', 'Serengeti', 'Bosque de Noruega', 'Gato del Chausie', 'Cymric', 'Snowshoe', 'Toyger', 'Burmilla', 'Khao Manee', 'Ojos Azules', 
-     'German Rex', 'Ojos Impares', 'Otro'],
-    Roedor: ['Cobaya de pelo corto', 'Cobaya de pelo largo peruana', 'Cobaya de pelo largo angora', 'Cobaya de pelo rizado',
-    'Hámster sirio', 'Hámster enano ruso', 'Hámster chino', 'Hámster roborovski', 'Hámster campbell',
-    'Ratón doméstico', 'Ratón dumbo', 'Ratón rex','Rata de laboratorio', 'Rata gigante de Gambian',
-    'Jerbo pigmeo', 'Jerbo de orejas de pincel', 'Jerbo de Mongolia',
-    'Conejillo de Indias peruano', 'Conejillo de Indias americano', 'Chinchilla de cola corta', 'Chinchilla de cola larga', 'Degú',
-    'Ardilla de tierra común', 'Ardilla de tierra sudafricana','Puercoespín enano africano',
-    'Ratón Gerbo', 'Gerbo de la India','Jerbo de Four-Toes', 'Conejillo de Indias de pelo rizado', 
-    'Chinchilla lanigera', 'Chinchilla brevicaudata', 'Ardilla de tierra', 'Paca', 'Otro'],
-    Pajaro: [
-      'Gallina', 'Pato', 'Pavo', 'Ganso', 'Periquito', 'Canario', 'Loro', 'Paloma', 'Ave exótica', 'Codorniz', 
-      'Faisan', 'Agapornis', 'Tórtola','Ave ornamental', 'Ave rapaz', 'Otro'],
-    Reptil: ['Iguana verde', 'Gecko leopardo', 'Dragón barbudo', 'Tortuga rusa', 'Pogona', 'Tortuga de orejas rojas', 'Serpiente de maíz', 
-    'Tortuga de caja', 'Serpiente de leche', 'Camaleón velado', 'Serpiente de bola', 'Dragón de agua chino', 'Camaleón de Jackson', 
-    'Serpiente rey', 'Tortuga de espolones', 'Serpiente de árbol verde', 'Gecko crestado de Nueva Caledonia', 'Serpiente de milhojas', 'Dragón acuático australiano', 
-    'Gecko de cola gorda', 'Serpiente de liga', 'Tortuga de caparazón blando', 'Camaleón pantera', 'Serpiente de rata', 'Dragón de agua de Filipinas', 
-    'Gecko de cola de hoja', 'Serpiente boa constrictora', 'Otro'],
-    Anfibio: ['Rana dardo venenoso', 'Rana Pacman', 'Sapo común', 'Rana arbórea', 'Sapo de vientre de fuego', 'Salamandra de dedos delgados', 
-    'Salamandra tigre', 'Salamandra de cola de algodón', 'Tritón vientre de fuego', 'Axolote', 'Newt crestado', 'Newt de vientre de fuego', 'Otro'],
-    Pez: [
-      "Guppys","Betta", "Tetra", "Cíclidos", "Pez Dorado", "Barbos", "Pez Gato", "Pez Killi", "Corydora", "Pez Arco Iris", "Pez Payaso",
-      "Pez Ángel", "Pez Cirujano", "Pez Loro", "Pez Mandarín", "Pez León", "Pez Damisela", "Pez Cirujano", "Pez Ángel de Agua Dulce", "Pez Mariposa",
-      "Pez Betta Dragón", "Pez Globo", "Pez Disco", "Pez Arlequín", "Pez Ramirezi", "Pez Platy", "Pez Gourami", "Pez de Cola de Espada",
-      "Pez Tetra Diamante", "Pez Killi Dorado", "Pez Ángel Coral", "Pez Mariposa Raya", "Pez Tigre", "Pez Murciélago", "Pez Conejo",
-      "Pez Dottyback", "Pez Lobo", "Pez Mandarín Verde", "Pez Unicornio", "Pez Escorpión" , "Otro"],
+    Perro: ['Akita', 'Alaskan Malamute', 'American Bulldog', 'American Staffordshire Terrier', 'Australian Shepherd',
+    'Australian Terrier', 'Basset Hound', 'Beagle', 'Belgian Malinois', 'Bichon Frise', 'Bichón Maltés', 'Bloodhound',
+    'Border Collie', 'Boston Terrier', 'Boxer', 'Bullmastiff', 'Bulldog', 'Bulldog Francés', 'Cairn Terrier', 'Cavalier King Charles Spaniel',
+    'Chihuahua', 'Chow Chow', 'Cocker Spaniel', 'Dálmata', 'Doberman Pinscher', 'Golden Retriever', 'Gran Danés', 'Irish Setter',
+    'Labrador Retriever', 'Miniature Schnauzer', 'Norwegian Elkhound', 'Papillon', 'Pastor Alemán', 'Pembroke Welsh Corgi', 'Perro de Agua Portugués',
+    'Pomeranian (Pomerania)', 'Poodle Miniatura', 'Pug', 'Rhodesian Ridgeback', 'Rottweiler', 'Samoyedo', 'Scottish Terrier', 'Shetland Sheepdog',
+    'Shiba Inu', 'Shih Tzu', 'Siberian Husky', 'Staffordshire Bull Terrier', 'Teckel', 'Terranova', 'Tibetan Mastiff', 'Weimaraner',
+    'Westie', 'Whippet', 'Yorkshire Terrier', 'Otro'],
+    Gato: ['Abisinio', 'American Curl', 'American Shorthair', 'Angora Turco', 'Azul Ruso', 'Bengal', 'Birmana', 'Bombay', 'British Shorthair', 
+    'Bosque de Noruega', 'Burmilla', 'Burmés', 'Chartreux', 'Cornish Rex', 'Cymric', 'Devon Rex', 'Exótico de Pelo Corto', 'German Rex', 'Gato del Chausie', 
+    'Highlander', 'Khao Manee', 'Khao Manee', 'Korat', 'LaPerm', 'Maine Coon', 'Manx', 'Mau Egipcio', 'Munchkin', 'Neva Masquerade', 'Noruego del Bosque', 
+    'Ojos Azules', 'Ojos Impares', 'Oriental Shorthair', 'Persa', 'Peterbald', 'Ragdoll', 'Scottish Fold', 'Selkirk Rex', 'Selkirk Rex', 'Siamesa', 
+    'Siamés Moderno', 'Singapura', 'Skookum', 'Sokoke', 'Somali', 'Sphynx', 'Serengeti', 'Snowshoe', 'Sokoke', 'Sphynx', 'Tonkinés', 'Toyger', 'Otro'],
+    Roedor: ['Ardilla de tierra', 'Ardilla de tierra común', 'Ardilla de tierra sudafricana', 'Cobaya de pelo corto',
+    'Cobaya de pelo largo angora', 'Cobaya de pelo largo peruana', 'Cobaya de pelo rizado', 'Conejillo de Indias americano',
+    'Conejillo de Indias de pelo rizado', 'Conejillo de Indias peruano', 'Chinchilla brevicaudata', 'Chinchilla de cola corta',
+    'Chinchilla de cola larga', 'Chinchilla lanigera', 'Degú', 'Gerbo de la India', 'Gerbo de Four-Toes', 'Hámster campbell',
+    'Hámster chino', 'Hámster enano ruso', 'Hámster roborovski', 'Hámster sirio', 'Jerbo de Mongolia', 'Jerbo de orejas de pincel',
+    'Jerbo pigmeo', 'Jerbo de Four-Toes', 'Paca', 'Puercoespín enano africano', 'Rata de laboratorio', 'Rata gigante de Gambian',
+    'Ratón doméstico', 'Ratón dumbo', 'Ratón gerbo', 'Ratón rex', 'Otro'],
+    Pajaro: ['Agapornis', 'Ave exótica', 'Ave ornamental', 'Ave rapaz', 'Canario', 'Codorniz', 'Faisan', 'Gallina', 'Ganso', 'Loro', 'Paloma', 'Pato', 
+    'Pavo', 'Periquito', 'Tórtola', 'Otro'],
+    Reptil: ['Camaleón de Jackson', 'Camaleón pantera', 'Dragón acuático australiano', 'Dragón barbudo', 'Dragón de agua chino', 'Dragón de agua de Filipinas',
+    'Gecko crestado de Nueva Caledonia', 'Gecko de cola de hoja', 'Gecko de cola gorda', 'Iguana verde', 'Pogona', 'Serpiente boa constrictora', 
+    'Serpiente de árbol verde', 'Serpiente de bola', 'Serpiente de leche', 'Serpiente de liga', 'Serpiente de maíz', 'Serpiente de milhojas', 'Serpiente de rata', 
+    'Serpiente rey', 'Tortuga de caparazón blando', 'Tortuga de caja', 'Tortuga de espolones', 'Tortuga de caparazón blando', 'Tortuga de orejas rojas',
+    'Tortuga rusa', 'Otro'],
+    Anfibio: ['Axolote', 'Newt crestado', 'Newt de vientre de fuego', 'Rana Pacman', 'Rana arbórea', 'Rana dardo venenoso', 'Salamandra de cola de algodón', 
+    'Salamandra de dedos delgados', 'Salamandra tigre', 'Sapo común', 'Sapo de vientre de fuego', 'Tritón vientre de fuego', 'Otro'],
+    Pez: ["Barbos", "Betta", "Cíclidos", "Corydora", "Pez Ángel", "Pez Ángel Coral", "Pez Arco Iris", "Pez Arlequín", "Pez Betta Dragón", "Pez Cirujano", 
+    "Pez Cirujano", "Pez Conejo", "Pez Damisela", "Pez Disco", "Pez Dorado", "Pez Dottyback", "Pez Escorpión", "Pez Globo", "Pez Gourami", "Pez Guppys", "Pez Killi", 
+    "Pez Killi Dorado", "Pez León", "Pez Lobo", "Pez Mandarín", "Pez Mandarín Verde", "Pez Mariposa", "Pez Mariposa Raya", "Pez Murciélago", "Pez Payaso", "Pez Platy",
+    "Pez Ramirezi", "Pez Tetra Diamante", "Pez Tigre", "Pez Unicornio", "Pez de Cola de Espada", "Otro"],
     Otro: ['Hurón', 'Insecto', 'Otro']
   };
 
@@ -200,7 +196,12 @@ const Filtros: React.FC <{onClose: () => void }> = ({
             </IonItem>
             <IonItem>
               <IonLabel>Raza</IonLabel>
-              <IonSelect placeholder="Seleccione una raza" onIonChange={(e) => setRaza(e.detail.value!)} value={Raza}>
+              <IonSelect placeholder="Seleccione una raza" onIonChange={(e) => setRaza(e.detail.value!)} value={Raza}
+                interfaceOptions={{
+                  showSearchbar: true,
+                  searchbarPlaceholder: 'Buscar raza...',
+                }}
+              >
                   {Especie &&
                 opcionesRazaPorEspecie[Especie].map((opcion, index) => (
                   <IonSelectOption key={index} value={opcion}>

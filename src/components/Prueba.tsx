@@ -9,75 +9,80 @@ const Welcome: React.FC = () => {
     useEffect(() => {
         // Supongamos que tienes un conjunto de datos de mascotas
         const mascotas = [
-          { id: 1, colores: ['Blanco', 'Negro'], likes: 45 },
-          { id: 2, colores: ['Gris', 'Marrón'], likes: 32 },
-          { id: 3, colores: ['Naranja', 'Amarillo'], likes: 18 },
-          { id: 4, colores: ['Atigrado'], likes: 60 },
-          { id: 5, colores: ['Manchado'], likes: 74 },
-          { id: 6, colores: ['Rojo'], likes: 12 },
-          { id: 7, colores: ['Azul'], likes: 85 },
-          { id: 8, colores: ['Verde'], likes: 5 },
-          { id: 9, colores: ['Negro'], likes: 41 },
-          { id: 10, colores: ['Marrón'], likes: 30 },
-          { id: 11, colores: ['Naranja'], likes: 10 },
-          { id: 12, colores: ['Amarillo'], likes: 25 },
-          { id: 13, colores: ['Atigrado', 'Manchado'], likes: 70 },
-          { id: 14, colores: ['Rojo', 'Verde'], likes: 15 },
-          { id: 15, colores: ['Azul', 'Marrón'], likes: 38 },
-          { id: 16, colores: ['Gris', 'Negro'], likes: 42 },
-          { id: 17, colores: ['Gris', 'Blanco'], likes: 20 },
-          { id: 18, colores: ['Naranja', 'Amarillo'], likes: 8 },
-          { id: 19, colores: ['Atigrado', 'Manchado'], likes: 65 },
-          { id: 20, colores: ['Rojo', 'Verde'], likes: 55 },
-          { id: 21, colores: ['Azul', 'Negro'], likes: 72 },
-          { id: 22, colores: ['Verde'], likes: 48 },
-          { id: 23, colores: ['Blanco'], likes: 9 },
-          { id: 24, colores: ['Marrón'], likes: 28 },
-          { id: 25, colores: ['Atigrado'], likes: 58 },
-          { id: 26, colores: ['Manchado'], likes: 68 },
-          { id: 27, colores: ['Rojo'], likes: 14 },
-          { id: 28, colores: ['Azul'], likes: 80 },
-          { id: 29, colores: ['Verde'], likes: 35 },
-          { id: 30, colores: ['Naranja'], likes: 22 },
-          { id: 31, colores: ['Rojo', 'Verde'], likes: 2 },
-          { id: 32, colores: ['Azul'], likes: 3 },
-          { id: 33, colores: ['Verde'], likes: 1 },
+          { id: 1, color: ['Blanco', 'Negro'], likesrecibidos: 45 },
+          { id: 2, color: ['Gris', 'Marron'], likesrecibidos: 32 },
+          { id: 3, color: ['Naranja', 'Amarillo'], likesrecibidos: 18 },
+          { id: 4, color: ['Atigrado'], likesrecibidos: 60 },
+          { id: 5, color: ['Manchado'], likesrecibidos: 74 },
+          { id: 6, color: ['Rojo'], likesrecibidos: 12 },
+          { id: 7, color: ['Azul'], likesrecibidos: 85 },
+          { id: 8, color: ['Verde'], likesrecibidos: 5 },
+          { id: 9, color: ['Negro'], likesrecibidos: 41 },
+          { id: 10, color: ['Marron'], likesrecibidos: 30 },
+          { id: 11, color: ['Naranja'], likesrecibidos: 10 },
+          { id: 12, color: ['Amarillo'], likesrecibidos: 25 },
+          { id: 13, color: ['Atigrado', 'Manchado'], likesrecibidos: 70 },
+          { id: 14, color: ['Rojo', 'Verde'], likesrecibidos: 15 },
+          { id: 15, color: ['Azul', 'Marron'], likesrecibidos: 38 },
+          { id: 16, color: ['Gris', 'Negro'], likesrecibidos: 42 },
+          { id: 17, color: ['Gris', 'Blanco'], likesrecibidos: 20 },
+          { id: 18, color: ['Naranja', 'Amarillo'], likesrecibidos: 8 },
+          { id: 19, color: ['Atigrado', 'Manchado'], likesrecibidos: 65 },
+          { id: 20, color: ['Rojo', 'Verde'], likesrecibidos: 55 },
+          { id: 21, color: ['Azul', 'Negro'], likesrecibidos: 72 },
+          { id: 22, color: ['Verde'], likesrecibidos: 48 },
+          { id: 23, color: ['Blanco'], likesrecibidos: 9 },
+          { id: 24, color: ['Marron'], likesrecibidos: 28 },
+          { id: 25, color: ['Atigrado'], likesrecibidos: 58 },
+          { id: 26, color: ['Manchado'], likesrecibidos: 68 },
+          { id: 27, color: ['Rojo'], likesrecibidos: 14 },
+          { id: 28, color: ['Azul'], likesrecibidos: 80 },
+          { id: 29, color: ['Verde'], likesrecibidos: 35 },
+          { id: 30, color: ['Naranja'], likesrecibidos: 22 },
+          { id: 31, color: ['Rojo', 'Verde'], likesrecibidos: 2 },
+          { id: 32, color: ['Azul'], likesrecibidos: 3 },
+          { id: 33, color: ['Verde'], likesrecibidos: 1 },
+          { id: 34, color: ['Negro'], likesrecibidos: 1 },
+          { id: 35, color: ['Blanco'], likesrecibidos: 60 },
         ];
         
         // Supongamos que tienes un conjunto de datos de colores con sus likes únicos
         const coloresLikes = [
-            { color: 'Blanco', likes: 50 },
-            { color: 'Negro', likes: 75 },
+            { color: 'Blanco', likes: 37 },
+            { color: 'Negro', likes: 30 },
             { color: 'Gris', likes: 34 },
-            { color: 'Marron', likes: 27 },
-            { color: 'Naranja', likes: 16 },
-            { color: 'Amarillo', likes: 13 },
-            { color: 'Atigrado', likes: 9 },
-            { color: 'Manchado', likes: 18 },
-            { color: 'Rojo', likes: 2 },
-            { color: 'Azul', likes: 1 },
-            { color: 'Verde', likes: 0 },
-            // Agrega más colores con likes únicos según sea necesario
+            { color: 'Marron', likes: 40 },
+            { color: 'Naranja', likes: 36 },
+            { color: 'Amarillo', likes: 33 },
+            { color: 'Atigrado', likes: 32 },
+            { color: 'Manchado', likes: 31 },
+            { color: 'Rojo', likes: 30 },
+            { color: 'Azul', likes: 29 },
+            { color: 'Verde', likes: 28 },
         ];
         
 
         // Convierte los datos de mascotas en tensores de TensorFlow.js
         // Función para convertir los datos de mascotas en tensores de TensorFlow.js
         function convertirDatosMascotasEnTensores(mascotas:any, coloresLikes:any) {
-          const xs: number[][] = []; // Anotación de tipo explícita
-          const ys: number[][] = []; // Anotación de tipo explícita
-
-          mascotas.forEach((mascota:any) => {
-            const coloresCodificados = coloresLikes.map((colorLike:any) =>
-              mascota.colores.includes(colorLike.color) ? 1 : 0
+          const xs: number[][] = [];
+          const ys: number[][] = [];
+        
+          mascotas.forEach((mascota: any) => {
+            const coloresCodificados = coloresLikes.map((colorLike: any) =>
+              mascota.color.includes(colorLike.color) ? 1 : 0
             );
-            xs.push(coloresCodificados);
-            ys.push([calcularPuntuacion(mascota)]);
+            const features = [...coloresCodificados, mascota.likesrecibidos]; // Solo incluir las codificaciones de colores y los "likes" de las mascotas
+            xs.push(features);
+            ys.push([calcularPuntuacion(features)]);
           });
-
+        
+          const numFilas = xs.length;
+          const numColumnas = coloresLikes.length + 1; // Suma 1 para los "likes" de las mascotas
+          
           return {
-            xs: tf.tensor2d(xs),
-            ys: tf.tensor2d(ys),
+            xs: tf.tensor2d(xs, [numFilas, numColumnas]),
+            ys: tf.tensor2d(ys, [numFilas, 1]),
           };
         }
 
@@ -88,34 +93,15 @@ const Welcome: React.FC = () => {
         
         const modelo = tf.sequential();
         
-        modelo.add(tf.layers.dense({ units: 1, inputShape: [coloresLikes.length] }));
+        modelo.add(tf.layers.dense({ units: 1, inputShape: [coloresLikes.length + 1], activation: 'relu' }));
 
         // Compila el modelo
         modelo.compile({ optimizer: 'adam', loss: 'meanSquaredError' });
 
         // Entrena el modelo con los datos de mascotas
-        modelo.fit(xs, ys, { epochs: 100 }).then(async () => {
+        modelo.fit(xs, ys, { epochs: 300 }).then(async () => {
 
           await modelo.save('downloads://modelo');          
-            // const modeloJSON = modelo.toJSON();          
-            // // Convierte el modelo a formato JSON y descárgalo como un archivo
-            // const modeloJSONString = JSON.stringify(modeloJSON);
-            // const blob = new Blob([modeloJSONString], { type: 'application/json' });
-            // const url = URL.createObjectURL(blob);
-
-            // // Crea un enlace de descarga invisible
-            // const a = document.createElement('a');
-            // a.style.display = 'none';
-            // a.href = url;
-            // a.download = 'modelo.json';
-
-            // // Agrega el enlace al documento y haz clic en él para descargar el modelo
-            // document.body.appendChild(a);
-            // a.click();
-
-            // // Libera recursos
-            // URL.revokeObjectURL(url);
-            // document.body.removeChild(a);
         
 
         console.log('Modelo entrenado guardado con éxito.');
@@ -124,36 +110,36 @@ const Welcome: React.FC = () => {
 
         // Supongamos que tienes datos de nuevas mascotas para las cuales deseas hacer recomendaciones
         const nuevasMascotas = [
-          { colores: ['Blanco', 'Negro'], likes: 50 },
-          { colores: ['Gris', 'Marrón'], likes: 28 },
-          { colores: ['Naranja', 'Amarillo'], likes: 15 },
-          { colores: ['Atigrado'], likes: 55 },
-          { colores: ['Manchado'], likes: 72 },
-          { colores: ['Rojo'], likes: 9 },
-          { colores: ['Azul'], likes: 68 },
-          { colores: ['Verde'], likes: 7 },
-          { colores: ['Negro'], likes: 44 },
-          { colores: ['Marrón'], likes: 34 },
-          { colores: ['Naranja'], likes: 20 },
-          { colores: ['Amarillo'], likes: 23 },
-          { colores: ['Atigrado', 'Manchado'], likes: 63 },
-          { colores: ['Rojo', 'Verde'], likes: 17 },
-          { colores: ['Azul', 'Marrón'], likes: 40 },
-          { colores: ['Gris', 'Negro'], likes: 46 },
-          { colores: ['Gris', 'Blanco'], likes: 22 },
-          { colores: ['Naranja', 'Amarillo'], likes: 11 },
-          { colores: ['Atigrado', 'Manchado'], likes: 66 },
-          { colores: ['Rojo', 'Verde'], likes: 51 },
-          { colores: ['Azul', 'Negro'], likes: 70 },
-          { colores: ['Verde'], likes: 55 },
-          { colores: ['Blanco'], likes: 13 },
-          { colores: ['Marrón'], likes: 31 },
-          { colores: ['Atigrado'], likes: 60 },
-          { colores: ['Manchado'], likes: 67 },
-          { colores: ['Rojo'], likes: 18 },
-          { colores: ['Azul'], likes: 77 },
-          { colores: ['Verde'], likes: 40 },
-          { colores: ['Naranja'], likes: 25 }
+          { color: ['Blanco', 'Negro'], likesrecibidos: 50 },
+          { color: ['Gris', 'Marron'], likesrecibidos: 28 },
+          { color: ['Naranja', 'Amarillo'], likesrecibidos: 15 },
+          { color: ['Atigrado'], likesrecibidos: 55 },
+          { color: ['Manchado'], likesrecibidos: 72 },
+          { color: ['Rojo'], likesrecibidos: 9 },
+          { color: ['Azul'], likesrecibidos: 68 },
+          { color: ['Verde'], likesrecibidos: 7 },
+          { color: ['Negro'], likesrecibidos: 44 },
+          { color: ['Marron'], likesrecibidos: 34 },
+          { color: ['Naranja'], likesrecibidos: 20 },
+          { color: ['Amarillo'], likesrecibidos: 23 },
+          { color: ['Atigrado', 'Manchado'], likesrecibidos: 63 },
+          { color: ['Rojo', 'Verde'], likesrecibidos: 17 },
+          { color: ['Azul', 'Marron'], likesrecibidos: 40 },
+          { color: ['Gris', 'Negro'], likesrecibidos: 46 },
+          { color: ['Gris', 'Blanco'], likesrecibidos: 22 },
+          { color: ['Naranja', 'Amarillo'], likesrecibidos: 11 },
+          { color: ['Atigrado', 'Manchado'], likesrecibidos: 66 },
+          { color: ['Rojo', 'Verde'], likesrecibidos: 51 },
+          { color: ['Azul', 'Negro'], likesrecibidos: 70 },
+          { color: ['Verde'], likesrecibidos: 55 },
+          { color: ['Blanco'], likesrecibidos: 13 },
+          { color: ['Marron'], likesrecibidos: 31 },
+          { color: ['Atigrado'], likesrecibidos: 60 },
+          { color: ['Manchado'], likesrecibidos: 67 },
+          { color: ['Rojo'], likesrecibidos: 18 },
+          { color: ['Azul'], likesrecibidos: 77 },
+          { color: ['Verde'], likesrecibidos: 40 },
+          { color: ['Naranja'], likesrecibidos: 25 }
         ];
 
         // Convierte los datos de las nuevas mascotas en un tensor
@@ -177,11 +163,12 @@ const Welcome: React.FC = () => {
         });
 
         // Función para calcular la puntuación de recomendación de una mascota
-        function calcularPuntuacion(mascota:any) {
-          return mascota.likes + coloresLikes.reduce((total, colorLike) => {
-            const tieneColor = mascota.colores.includes(colorLike.color);
-            return total + (tieneColor ? colorLike.likes : 0);
+        function calcularPuntuacion(features:any[]) {
+          const likesMascotas = features[coloresLikes.length + 1];
+          const likesColores = coloresLikes.reduce((total: any, colorLike: any, index: number) => {
+            return total + (features[index] ? colorLike.likes : 0);
           }, 0);
+          return likesMascotas + likesColores;
         }
       })
 

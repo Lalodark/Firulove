@@ -38,7 +38,8 @@ const Chats: React.FC = () => {
     leido:number,
     ultimosender:string,
     idultimomsg:string,
-    timestamp:any
+    timestamp:any,
+    imagenUrl: string
   }
   const [mascotasMensajes, setMascotasMensajes] = useState<Mascota[]>([]);
   const [hayMascotas, setHayMascotas] = useState(true);
@@ -201,12 +202,19 @@ const Chats: React.FC = () => {
         const datoschat = chat.data()
         const {messages} = datoschat
 
+        const maschat = collection(store, 'mascotas')
+        const petshow = query(maschat, where("idmascota", "==", idmascota))
+        const querySnapshotsm = await getDocs(petshow)
+        const datosMascota = querySnapshotsm.docs[0]
+        const datam = datosMascota.data()
+        const {imagenUrl} = datam;
+
         if(!mascotasAgregadas.has(idmascota))
         {
           if(messages.length > 0)
-          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:messages[messages.length -1].content, leido: messages[messages.length -1].isread, ultimosender:messages[messages.length -1].senderId, idultimomsg:messages[messages.length -1].messageId, timestamp:messages[messages.length -1].timestamp})
+          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:messages[messages.length -1].content, leido: messages[messages.length -1].isread, ultimosender:messages[messages.length -1].senderId, idultimomsg:messages[messages.length -1].messageId, timestamp:messages[messages.length -1].timestamp, imagenUrl:imagenUrl})
           else
-          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:''})
+          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:'', imagenUrl:''})
         }
         mascotasAgregadas.add(idmascota);
       })
@@ -259,7 +267,7 @@ const Chats: React.FC = () => {
                 <IonItem button key={character.nombre} onClick={() => abrirChat(character.idchat, character.id, character.idultimomsg, character.leido)} detail={false}>
                   <IonIcon slot="end" color="primary" className="small-icon" icon={character.leido == 1 && character.ultimosender != datosUsuario.activepet ? ellipse : ''}></IonIcon>
                   <IonAvatar slot="start">
-                    <img src={firulais} />
+                    <img src={character.imagenUrl ? character.imagenUrl:firulais} />
                   </IonAvatar>
                   <IonLabel>
                     <h2><strong>{character.nombre}</strong></h2>
