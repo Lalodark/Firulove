@@ -5,7 +5,7 @@ import { IonContent, IonLabel, IonPage, IonButton, IonImg, IonHeader, IonToolbar
 IonTitle, IonButtons,IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonFab, IonFabButton, IonGrid,
 IonRow, IonCol, IonChip, IonAlert, useIonViewWillEnter, useIonLoading } from '@ionic/react';
 import { searchOutline, pawOutline, chatbubbleEllipsesOutline, filter, personCircleOutline, createOutline, trashOutline, addOutline,
-checkmarkOutline } from 'ionicons/icons';
+checkmarkOutline, pauseCircleOutline, playCircleOutline } from 'ionicons/icons';
 
 import { auth, store } from '../firebase'
 import { collection, query, where, getDocs, deleteDoc, doc } from "firebase/firestore";
@@ -263,13 +263,42 @@ const Mascotas: React.FC = () => {
                         <IonIcon aria-hidden="true" icon={createOutline}></IonIcon>
                       </IonButton>
                     </IonCol>
+                    
+                    <IonCol>
+                      <IonButton color= 'success' disabled={arraymascotas.length == 1} expand="block" onClick={(e) => {e.stopPropagation(); 
+                        openAlert(index);}}>
+                      <IonAlert
+                         header="Confirmar"
+                         isOpen={openAlertIndex === index}
+                         message="¿Está seguro que desea deshabilitar esta mascota?"
+                         buttons={[
+                           {
+                             text: 'Cancelar',
+                             role: 'cancel',
+                             handler: () => {
+                              closeAlert();
+                             },
+                           },
+                           {
+                             text: 'Confirmar',
+                             role: 'confirm',
+                             handler: () => { 
+                              handleBorrarClick(character);
+                             },
+                           },
+                         ]}
+                         onDidDismiss={() => closeAlert()}></IonAlert>
+                        <IonIcon aria-hidden="true" icon={pauseCircleOutline}></IonIcon>
+                      </IonButton>                      
+                    </IonCol>
+
                     <IonCol>
                       <IonButton disabled={arraymascotas.length == 1} expand="block" onClick={(e) => {e.stopPropagation(); 
                         openAlert(index);}}>
                       <IonAlert
                          header="Confirmar"
                          isOpen={openAlertIndex === index}
-                         message="¿Está seguro que desea borrar esta mascota?"
+                         message="¿Está seguro que desea eliminar esta mascota?"
                          buttons={[
                            {
                              text: 'Cancelar',

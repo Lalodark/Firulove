@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 
 import { IonContent, IonLabel, IonButton, IonItem, IonHeader, IonToolbar, IonRange, IonSelect, IonSelectOption,
-IonButtons,IonTitle, useIonViewWillEnter, IonSearchbar } from '@ionic/react';
+IonButtons,IonTitle, useIonViewWillEnter, IonSearchbar, IonModal, IonFooter } from '@ionic/react';
 
 import { auth, store } from '../firebase'
 import { collection, query, where, getDocs } from "firebase/firestore";
@@ -14,7 +14,8 @@ const Filtros: React.FC <{onClose: () => void }> = ({
 
   const[Especie, setEspecie] = useState<string>('')
   const[Raza, setRaza] = useState<string>('')
-  const [filtroRaza, setFiltroRaza] = useState<string>('');
+  const [mostrarModal, setMostrarModal] = useState(false);
+  const [filtroRazas, setFiltroRazas] = useState<string[]>([]);
   
   const[sexo, setSexo] = useState<string>('')
   const[distancia, setDistancia] = useState<number>()
@@ -123,6 +124,31 @@ const Filtros: React.FC <{onClose: () => void }> = ({
     getpetid()
   }
 
+  const handleAbrirModal = (e: React.MouseEvent) => {
+    e.preventDefault();
+    actualizarFiltroRazas();
+    setMostrarModal(true);
+  };
+
+  const handleCerrarModal = () => {
+    setMostrarModal(false);
+  };
+
+  const handleSeleccionarRaza = (razaSeleccionada: string) => {
+    setRaza(razaSeleccionada);
+    setMostrarModal(false);
+  };
+
+  const handleBuscarRaza = (e: CustomEvent) => {
+    const filtro = e.detail.value?.toLowerCase() || '';
+    setFiltroRazas(opcionesRazaPorEspecie[Especie]?.filter(opcion => opcion.toLowerCase().includes(filtro)) || []);
+  };
+
+  const actualizarFiltroRazas = () => {
+    // Mostrar todas las opciones disponibles al abrir el modal
+    setFiltroRazas(opcionesRazaPorEspecie[Especie] || []);
+  };
+
   const getpetid = async () =>{
     auth.onAuthStateChanged(async (usuarioActual) => {
       if (usuarioActual) {
@@ -194,22 +220,12 @@ const Filtros: React.FC <{onClose: () => void }> = ({
                 <IonSelectOption value="Otro">Otro</IonSelectOption>
               </IonSelect>
             </IonItem>
-            <IonItem>
-              <IonLabel>Raza</IonLabel>
-              <IonSelect placeholder="Seleccione una raza" onIonChange={(e) => setRaza(e.detail.value!)} value={Raza}
-                interfaceOptions={{
-                  showSearchbar: true,
-                  searchbarPlaceholder: 'Buscar raza...',
-                }}
-              >
-                  {Especie &&
-                opcionesRazaPorEspecie[Especie].map((opcion, index) => (
-                  <IonSelectOption key={index} value={opcion}>
-                    {opcion}
-                  </IonSelectOption>
-                ))}
-              </IonSelect>
-            </IonItem>
+            
+          <IonItem onClick={handleAbrirModal} detail={true}>
+            <IonLabel>Raza</IonLabel>
+            {Raza}
+          </IonItem>
+
             <IonItem>
               <IonLabel>Sexo</IonLabel>
               <IonSelect placeholder="Seleccione una especie" onIonChange={(e) => setSexo(e.detail.value!)} value={sexo}>
@@ -233,6 +249,31 @@ const Filtros: React.FC <{onClose: () => void }> = ({
                 Edad: {rangeValue.lower} - {rangeValue.upper} años
               </div>
             </IonItem>    
+            
+            <IonModal isOpen={mostrarModal} onDidDismiss={handleCerrarModal}>
+              <IonHeader>
+                <IonToolbar>
+                  <IonTitle>Seleccionar Raza</IonTitle>
+                </IonToolbar>
+              </IonHeader>
+              <IonContent>
+                <IonSearchbar onIonChange={handleBuscarRaza} />
+                {/* Lista de razas filtradas */}
+                {filtroRazas.map((opcion, index) => (
+                  <IonItem key={index} button onClick={() => handleSeleccionarRaza(opcion)}>
+                    <IonLabel>{opcion}</IonLabel>
+                  </IonItem>
+                ))}
+              </IonContent>
+              <IonFooter>
+                <IonToolbar>
+                  <IonButton expand="full" onClick={handleCerrarModal}>
+                    Cancelar
+                  </IonButton>
+                </IonToolbar>
+              </IonFooter>
+          </IonModal>
+
           </form>      
         </IonContent>
   );

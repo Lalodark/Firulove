@@ -4,7 +4,7 @@ import { IonContent, IonPage } from '@ionic/react';
 
 import * as tf from '@tensorflow/tfjs';
 
-const Welcome: React.FC = () => {
+const Prueba: React.FC = () => {
     
     useEffect(() => {
         // Supongamos que tienes un conjunto de datos de mascotas
@@ -181,5 +181,5 @@ const Welcome: React.FC = () => {
     );
   };
   
-  export default Welcome;
+  export default Prueba;
   

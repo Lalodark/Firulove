@@ -1,0 +1,32 @@
+h1 {
+    text-align: center;
+    font-weight: bold;
+    font-size: 36px;
+    padding-bottom: 20px;
+}
+
+.con-input {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 auto;
+    max-width: 400px; /* Establece un ancho máximo para el formulario */
+}
+
+.loginput {
+    --background: #373737;
+    --color: #fff;
+    --placeholder-color: #ddd;
+    --placeholder-opacity: 0.8;
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    margin: 8px 0;
+}
+
+.con-bttn {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+

@@ -50,6 +50,7 @@
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
     "react-scripts": "^5.0.0",
+    "react-select": "^5.8.0",
     "react-tinder-card": "^1.6.2",
     "react-transition-group": "^4.4.5",
     "swiper": "^9.4.1",

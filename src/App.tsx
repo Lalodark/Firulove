@@ -17,6 +17,8 @@ import Mascotas_CE from './components/Mascotas_CE'
 import Chat_Personal from './components/Chat_Personal';
 import Welcome from './components/Welcome';
 import Prueba from './components/Prueba'
+import Recover from './components/Recover'
+import Change_Pass from './components/Change_Pass';
 
 /* Core CSS required for Ionic components to work properly */
 import '@ionic/react/css/core.css';
@@ -75,6 +77,12 @@ const App: React.FC = () => (
           </Route>
           <Route path='/prueba'>
             <Prueba />
+          </Route>
+          <Route path='/recover'>
+            <Recover />
+          </Route>
+          <Route path='/change_pass'>
+            <Change_Pass />
           </Route>
         </IonRouterOutlet>
     </IonReactRouter>

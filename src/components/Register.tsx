@@ -159,17 +159,17 @@ const Register: React.FC = () => {
           </IonText>
 
           <IonItem className='loginput'>
-            <IonLabel position="floating">Nombre</IonLabel>
+            <IonLabel position="floating">Nombre <IonText color="danger">*</IonText></IonLabel>
             <IonInput type="text" onIonChange={(e) => setNombre(e.detail.value!)} />
           </IonItem>
           
           <IonItem className='loginput'>
-            <IonLabel position="floating">Apellido</IonLabel>
+            <IonLabel position="floating">Apellido <IonText color="danger">*</IonText></IonLabel>
             <IonInput type="text" onIonChange={(e) => setApellido(e.detail.value!)} />
           </IonItem>
 
           <IonItem className='loginput'>
-            <IonLabel position="floating">Fecha de Nacimiento</IonLabel>
+            <IonLabel position="floating">Fecha de Nacimiento <IonText color="danger">*</IonText></IonLabel>
             <IonInput id="date" value={formatDate(fecha)}>
               <IonPopover trigger='date'>
                 <IonDatetime presentation="date" showDefaultButtons={true} onIonChange={handleFechaChange} ></IonDatetime>
@@ -177,16 +177,16 @@ const Register: React.FC = () => {
             </IonInput>
           </IonItem> 
           <IonItem className='loginput'>
-            <IonLabel position="floating">Email</IonLabel>
+            <IonLabel position="floating">Email <IonText color="danger">*</IonText></IonLabel>
             <IonInput type="email" onIonChange={(e) => setEmail(e.detail.value!)}/>
           </IonItem>
 
           <IonItem className='loginput'>
-            <IonLabel position="floating">Contraseña</IonLabel>
+            <IonLabel position="floating">Contraseña <IonText color="danger">*</IonText></IonLabel>
             <IonInput type="password" onIonChange={(e) => setPass(e.detail.value!)}/>
           </IonItem>
           <IonItem className='loginput'>
-            <IonLabel position="floating">Repetir contraseña</IonLabel>
+            <IonLabel position="floating">Repetir contraseña <IonText color="danger">*</IonText></IonLabel>
             <IonInput type="password" onIonChange={(e) => setRpass(e.detail.value!)}/>
           </IonItem>
           </div>
