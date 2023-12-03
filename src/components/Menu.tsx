@@ -434,7 +434,8 @@ const Menu: React.FC = () => {
           where("idusuario", "!=", id),
           where("especie", "==", especie),
           where("raza", "==", raza),
-          where("sexo", "==", sexo)
+          where("sexo", "==", sexo),
+          where("disponible", "==", 1)
         );
         
         

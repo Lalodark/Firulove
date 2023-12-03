@@ -1,5 +1,4 @@
 import React from 'react';
-import { useHistory } from 'react-router-dom'
 
 import { IonContent, IonPage, IonImg, IonButton } from '@ionic/react';
 
@@ -15,7 +14,6 @@ import match from '../images/Match_2.png'
 import happy from '../images/Contento.png'
 
 const Welcome: React.FC = () => {
-    const history = useHistory();
   
     return (
       <IonPage>

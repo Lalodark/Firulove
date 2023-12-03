@@ -19,14 +19,21 @@ const Login: React.FC = () => {
 
   const[email, setEmail] = useState<string>('')
   const[pass, setPass] = useState<string>('')
+  
+  const [emailError, setEmailError] = useState(false);
+  const [passwordError, setPasswordError] = useState(false);
   const[msgerror, setMsgError] = useState<string>('')
   
   //Funciones
 
   const LoginUsuario = async (e:React.FormEvent<HTMLFormElement>) =>{
     e.preventDefault()
+    setEmailError(false);
+    setPasswordError(false);
+
     if(email != '' && pass != '')
     {
+      
       try {
         await auth.signInWithEmailAndPassword(email, pass);
         setMsgError('')
@@ -50,10 +57,12 @@ const Login: React.FC = () => {
       } catch (error:any) {
         if (error.code === 'auth/wrong-password' ) { 
           setMsgError('El password ingresado no es correcto.');
+          setPasswordError(true);
           presentToast()
         }
         if (error.code === 'auth/user-not-found' ) { 
           setMsgError('No se ha encontrado el email ingresado.');
+          setEmailError(true);
           presentToast()
         }
       }
@@ -62,6 +71,14 @@ const Login: React.FC = () => {
     {
       setMsgError('Por favor complete todos los campos para continuar.');
       presentToast()
+      if(pass == '')
+      {
+        setPasswordError(true);
+      }
+      if(email == '')
+      {
+        setEmailError(true);
+      }
     }
     
   }
@@ -94,11 +111,11 @@ const Login: React.FC = () => {
         </div>
         <form className='form' onSubmit={LoginUsuario}>
           <div className='container con-input'>
-            <IonItem className='loginput'>
+            <IonItem className={`loginput ${emailError ? 'error' : ''}`}>
               <IonLabel position="floating">Email</IonLabel>
               <IonInput type="email" onIonChange={(e) => setEmail(e.detail.value!)} />
             </IonItem>
-            <IonItem className='loginput'>
+            <IonItem className={`loginput ${passwordError ? 'error' : ''}`}>
               <IonLabel position="floating">Password</IonLabel>
               <IonInput type="password" onIonChange={(e) => setPass(e.detail.value!)} />
             </IonItem>
@@ -106,6 +123,7 @@ const Login: React.FC = () => {
           <div className='container con-bttn'>
               <IonButton size="large" shape="round" routerDirection='root' expand='block' type='submit'>Login</IonButton>
               <p>¿No tienes una cuenta? <a href="/register">¡Create una!</a></p>
+              <p>¿Olvidaste tu contraseña? <a href="/recover">¡Recupérala!</a></p>
           </div>
         </form>
       </IonContent>

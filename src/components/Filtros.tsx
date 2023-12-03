@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
 
 import { IonContent, IonLabel, IonButton, IonItem, IonHeader, IonToolbar, IonRange, IonSelect, IonSelectOption,
-IonButtons,IonTitle, useIonViewWillEnter, IonSearchbar, IonModal, IonFooter } from '@ionic/react';
+IonButtons, IonTitle, useIonViewWillEnter, IonSearchbar, IonModal, IonFooter, useIonToast } from '@ionic/react';
+import { alertCircleOutline } from 'ionicons/icons';
 
 import { auth, store } from '../firebase'
 import { collection, query, where, getDocs } from "firebase/firestore";
+
+import './Filtros.css'
 
 const Filtros: React.FC <{onClose: () => void }> = ({
   onClose
 }) =>  {
 
   //Variables & Declaraciones
+  const [present] = useIonToast();
 
-  const[Especie, setEspecie] = useState<string>('')
-  const[Raza, setRaza] = useState<string>('')
+  const [Especie, setEspecie] = useState<string>('')
+  const [Raza, setRaza] = useState<string>('')
   const [mostrarModal, setMostrarModal] = useState(false);
   const [filtroRazas, setFiltroRazas] = useState<string[]>([]);
   
@@ -22,10 +26,12 @@ const Filtros: React.FC <{onClose: () => void }> = ({
   const[edadMinima, setEdadMinima] = useState<number>(5)
   const[edadMaxima, setEdadMaxima] = useState<number>(9)
 
+  const [razaError, setRazaError] = useState(false);
+
   const opcionesRazaPorEspecie: Record<string, string[]> = {
     Perro: ['Akita', 'Alaskan Malamute', 'American Bulldog', 'American Staffordshire Terrier', 'Australian Shepherd',
     'Australian Terrier', 'Basset Hound', 'Beagle', 'Belgian Malinois', 'Bichon Frise', 'Bichón Maltés', 'Bloodhound',
-    'Border Collie', 'Boston Terrier', 'Boxer', 'Bullmastiff', 'Bulldog', 'Bulldog Francés', 'Cairn Terrier', 'Cavalier King Charles Spaniel',
+    'Border Collie', 'Boston Terrier', 'Boxer', 'Bullmastiff', 'Bulldog', 'Bulldog Francés', 'Cairn Terrier', 'Caniche', 'Cavalier King Charles Spaniel',
     'Chihuahua', 'Chow Chow', 'Cocker Spaniel', 'Dálmata', 'Doberman Pinscher', 'Golden Retriever', 'Gran Danés', 'Irish Setter',
     'Labrador Retriever', 'Miniature Schnauzer', 'Norwegian Elkhound', 'Papillon', 'Pastor Alemán', 'Pembroke Welsh Corgi', 'Perro de Agua Portugués',
     'Pomeranian (Pomerania)', 'Poodle Miniatura', 'Pug', 'Rhodesian Ridgeback', 'Rottweiler', 'Samoyedo', 'Scottish Terrier', 'Shetland Sheepdog',
@@ -83,45 +89,65 @@ const Filtros: React.FC <{onClose: () => void }> = ({
     setRaza('');
   };
 
+  const presentToast = () => {
+    present({
+      message: "Por favor complete todos los campos para continuar.",
+      duration: 1500,
+      position: 'top',
+      icon: alertCircleOutline,
+      color: 'danger'
+    });
+  };
+
   const confirm = async (e:React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    setRazaError(false);
 
-    const getpetid = async() =>{
-      auth.onAuthStateChanged(async (usuarioActual) => {
-        if (usuarioActual) {
-          const email = usuarioActual.email;
-          const usuarioss = collection(store,'usuarios')
-          const user = query(usuarioss, where("email", "==", email))
-          const querySnapshots = await getDocs(user)
-          if (!querySnapshots.empty) {
-              const doc = querySnapshots.docs[0];
-              const data = doc.data()
-              const {activepet} = data;
-              guardarFiltros(activepet)
-      }}})
-    }
-    const guardarFiltros = async(idpet:any) =>{
-    const mascotass = collection(store,'filtros')
-    const filtro = query(mascotass, where("idmascota", "==", idpet))
-    const querySnapshots = await getDocs(filtro)
-    if(!querySnapshots.empty)
-      {
-        const docs = querySnapshots.docs[0];
-        const newfilters ={
-          idmascota:idpet,
-          especie:Especie,
-          raza:Raza,
-          sexo:sexo,
-          distancia:distancia,
-          edadMinima:rangeValue.lower,
-          edadMaxima:rangeValue.upper
-        }
-        await store.collection('filtros').doc(docs.id).set(newfilters)
+    if(Raza != '')
+    {
+      const getpetid = async() =>{
+        auth.onAuthStateChanged(async (usuarioActual) => {
+          if (usuarioActual) {
+            const email = usuarioActual.email;
+            const usuarioss = collection(store,'usuarios')
+            const user = query(usuarioss, where("email", "==", email))
+            const querySnapshots = await getDocs(user)
+            if (!querySnapshots.empty) {
+                const doc = querySnapshots.docs[0];
+                const data = doc.data()
+                const {activepet} = data;
+                guardarFiltros(activepet)
+        }}})
       }
-      onClose()
-      location.reload() 
+  
+      const guardarFiltros = async(idpet:any) =>{
+      const mascotass = collection(store,'filtros')
+      const filtro = query(mascotass, where("idmascota", "==", idpet))
+      const querySnapshots = await getDocs(filtro)
+      if(!querySnapshots.empty)
+        {
+          const docs = querySnapshots.docs[0];
+          const newfilters ={
+            idmascota:idpet,
+            especie:Especie,
+            raza:Raza,
+            sexo:sexo,
+            distancia:distancia,
+            edadMinima:rangeValue.lower,
+            edadMaxima:rangeValue.upper
+          }
+          await store.collection('filtros').doc(docs.id).set(newfilters)
+        }
+        onClose()
+        location.reload() 
+      }
+      getpetid()
     }
-    getpetid()
+    else
+    {
+      presentToast();
+      setRazaError(true);
+    }
   }
 
   const handleAbrirModal = (e: React.MouseEvent) => {
@@ -221,7 +247,7 @@ const Filtros: React.FC <{onClose: () => void }> = ({
               </IonSelect>
             </IonItem>
             
-          <IonItem onClick={handleAbrirModal} detail={true}>
+          <IonItem className={`${razaError ? 'error' : ''}`} onClick={handleAbrirModal} detail={true}>
             <IonLabel>Raza</IonLabel>
             {Raza}
           </IonItem>
@@ -273,7 +299,6 @@ const Filtros: React.FC <{onClose: () => void }> = ({
                 </IonToolbar>
               </IonFooter>
           </IonModal>
-
           </form>      
         </IonContent>
   );

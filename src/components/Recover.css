@@ -24,6 +24,10 @@ h1 {
     margin: 8px 0;
 }
 
+.loginput.error {
+    border: 1px solid red;
+}
+
 .con-bttn {
     margin-top: 20px;
     margin-bottom: 20px;

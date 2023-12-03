@@ -37,6 +37,7 @@ const Mascotas_CE: React.FC = () => {
   const[Raza, setRaza] = useState<string>('')
   const[Color, setColor] = useState<string>('')
   const[Descripcion, setDescripcion] = useState<string>('')
+  const[imagen, setImagen] = useState<string>('')
   const[userID, setUserID] = useState({
     id: '',
   });
@@ -78,6 +79,13 @@ const Mascotas_CE: React.FC = () => {
     Otro: ['Hurón', 'Insecto', 'Otro']
   };
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  
+  const [nombreError, setNombreError] = useState(false);
+  const [edadError, setEdadError] = useState(false);
+  const [sexoError, setSexoError] = useState(false);
+  const [especieError, setEspecieError] = useState(false);
+  const [razaError, setRazaError] = useState(false);
+  const [colorError, setColorError] = useState(false);
   const[msgerror, setMsgError] = useState<string>('')
   
 
@@ -117,6 +125,13 @@ const Mascotas_CE: React.FC = () => {
     const position = await Geolocation.getCurrentPosition();
     const { latitude, longitude } = position.coords;
 
+    setNombreError(false);
+    setEdadError(false);
+    setSexoError(false);
+    setEspecieError(false);
+    setRazaError(false);
+    setColorError(false);
+
     if(nombre != '' && edad != '' && sexo != '' && Especie != '' && Raza != '' && Color.length > 0)
     {
       let imageUrl = ''
@@ -144,7 +159,9 @@ const Mascotas_CE: React.FC = () => {
         descripcion:Descripcion,
         latitud: latitude,
         longitud: longitude,
-        ...imageUrl ? { imagenUrl: imageUrl } : {}
+        disponible: 1,
+        ...imageUrl ? { imagenUrl: imageUrl } : {imagenUrl: imagen}
+
       }
       try{
         const mascotass = collection(store,'mascotas')
@@ -161,6 +178,30 @@ const Mascotas_CE: React.FC = () => {
     else{
       setMsgError('Por favor complete todos los campos para continuar.')
       presentToast()
+      if(Color.length <= 0)
+      {
+        setColorError(true);
+      }
+      if(Raza == '')
+      {
+        setRazaError(true);
+      }
+      if(Especie == '')
+      {
+        setEspecieError(true);
+      }
+      if(sexo == '')
+      {
+        setSexoError(true);
+      }
+      if(edad == '')
+      {
+        setEdadError(true);
+      }
+      if(nombre == '')
+      {
+        setNombreError(true);
+      }
     }
     
   }
@@ -201,6 +242,14 @@ const Mascotas_CE: React.FC = () => {
     e.preventDefault()
     const position = await Geolocation.getCurrentPosition();
     const { latitude, longitude } = position.coords;
+
+    setNombreError(false);
+    setEdadError(false);
+    setSexoError(false);
+    setEspecieError(false);
+    setRazaError(false);
+    setColorError(false);
+
     let imageUrl = ''
     if (selectedFile) {
       const storageRef = ref(storage, '/' + selectedFile.name);
@@ -213,6 +262,7 @@ const Mascotas_CE: React.FC = () => {
         console.error('Error al subir la imagen:', error);
       }
     }
+
     if(nombre != '' && edad != '' && sexo != '' && Especie != '' && Raza != '' && Color.length > 0)
     {
       try{
@@ -291,6 +341,30 @@ const Mascotas_CE: React.FC = () => {
     else{
       setMsgError('Por favor complete todos los campos para continuar.')
       presentToast()
+      if(Color.length <= 0)
+      {
+        setColorError(true);
+      }
+      if(Raza == '')
+      {
+        setRazaError(true);
+      }
+      if(Especie == '')
+      {
+        setEspecieError(true);
+      }
+      if(sexo == '')
+      {
+        setSexoError(true);
+      }
+      if(edad == '')
+      {
+        setEdadError(true);
+      }
+      if(nombre == '')
+      {
+        setNombreError(true);
+      }
     }
   }
 
@@ -328,7 +402,7 @@ const Mascotas_CE: React.FC = () => {
       setModoEdicion(true);
       const docs = querySnapshots.docs[0];
       const data = docs.data()
-      const {nombre, edad, sexo, especie, raza, color, descripcion} = data;
+      const {nombre, edad, sexo, especie, raza, color, descripcion, imagenUrl} = data;
       setNombre(nombre);
       setEdad(edad);
       setSexo(sexo);
@@ -336,6 +410,7 @@ const Mascotas_CE: React.FC = () => {
       setRaza(raza);
       setColor(color);
       setDescripcion(descripcion);
+      setImagen(imagenUrl)
     }
   }
 
@@ -377,89 +452,93 @@ const Mascotas_CE: React.FC = () => {
           </IonToolbar>
         </IonHeader>
 
-        <IonItem>
-          <IonInput label="Nombre *" label-placement="floating"  value={nombre} onIonChange={(e) => setNombre(e.detail.value!)}></IonInput>
+        <IonItem className={`${nombreError ? 'error' : ''}`}>
+          <IonInput label="Nombre *" label-placement="floating" value={nombre} onIonChange={(e) => setNombre(e.detail.value!)}></IonInput>
         </IonItem>
-        <IonItem>
+
+        <IonItem className={`${edadError ? 'error' : ''}`}>
           <IonInput label="Edad *" type="number" label-placement="floating" value={edad} onIonChange={(e) => setEdad(e.detail.value!)}></IonInput>
         </IonItem>
-        <IonItem>
+
+        <IonItem className={`${sexoError ? 'error' : ''}`}>
               <IonLabel>Sexo *</IonLabel>
               <IonSelect placeholder="Seleccione una especie" onIonChange={(e) => setSexo(e.detail.value!)} value={sexo}>
                 <IonSelectOption value="Macho">Macho</IonSelectOption>
                 <IonSelectOption value="Hembra">Hembra</IonSelectOption>
               </IonSelect>
         </IonItem>
-            <IonItem>
-              <IonLabel>Especie *</IonLabel>
-              <IonSelect placeholder="Seleccione una especie" onIonChange={handleEspecieChange} value={Especie}>
-                <IonSelectOption value="Perro">Perro</IonSelectOption>
-                <IonSelectOption value="Gato">Gato</IonSelectOption>
-                <IonSelectOption value="Roedor">Roedor</IonSelectOption>
-                <IonSelectOption value="Pajaro">Pájaro</IonSelectOption>
-                <IonSelectOption value="Reptil">Reptil</IonSelectOption>
-                <IonSelectOption value="Anfibio">Anfibio</IonSelectOption>
-                <IonSelectOption value="Pez">Pez</IonSelectOption>
-                <IonSelectOption value="Otro">Otro</IonSelectOption>
-              </IonSelect>
-            </IonItem>
 
-            <IonItem onClick={handleAbrirModal} detail={true}>
-              <IonLabel>Raza *</IonLabel>
-              {Raza}
-            </IonItem>
+        <IonItem className={`${especieError ? 'error' : ''}`}>
+          <IonLabel>Especie *</IonLabel>
+          <IonSelect placeholder="Seleccione una especie" onIonChange={handleEspecieChange} value={Especie}>
+            <IonSelectOption value="Perro">Perro</IonSelectOption>
+            <IonSelectOption value="Gato">Gato</IonSelectOption>
+            <IonSelectOption value="Roedor">Roedor</IonSelectOption>
+            <IonSelectOption value="Pajaro">Pájaro</IonSelectOption>
+            <IonSelectOption value="Reptil">Reptil</IonSelectOption>
+            <IonSelectOption value="Anfibio">Anfibio</IonSelectOption>
+            <IonSelectOption value="Pez">Pez</IonSelectOption>
+            <IonSelectOption value="Otro">Otro</IonSelectOption>
+          </IonSelect>
+        </IonItem>
 
-            <IonItem>
-              <IonLabel>Color *</IonLabel>
-              <IonSelect placeholder="Seleccione un color" multiple={true} onIonChange={(e) => setColor(e.detail.value!)}  value={Color}>
-                <IonSelectOption value="Blanco">Blanco</IonSelectOption>
-                <IonSelectOption value="Negro">Negro</IonSelectOption>
-                <IonSelectOption value="Gris">Gris</IonSelectOption>
-                <IonSelectOption value="Marron">Marrón</IonSelectOption>
-                <IonSelectOption value="Naranja">Naranja</IonSelectOption>
-                <IonSelectOption value="Amarillo">Amarillo</IonSelectOption>
-                <IonSelectOption value="Atigrado">Atigrado</IonSelectOption>
-                <IonSelectOption value="Manchado">Manchado</IonSelectOption>
-                <IonSelectOption value="Rojo">Rojo</IonSelectOption>
-                <IonSelectOption value="Azul">Azul</IonSelectOption>
-                <IonSelectOption value="Verde">Verde</IonSelectOption>
-              </IonSelect>
-            </IonItem>
-            <IonItem>
-              <IonTextarea value={Descripcion} onIonChange={(e) => setDescripcion(e.detail.value!)} autoGrow={true} label="Descripción" label-placement="floating" placeholder="Introduzca una descripción"></IonTextarea>
-            </IonItem>
-            <IonItem>
-              <IonItem>
-                <input type="file" accept="image/*" onChange={handleFileChange} />
-              </IonItem>
-            </IonItem>
+        <IonItem className={`${razaError ? 'error' : ''}`} onClick={handleAbrirModal} detail={true}>
+          <IonLabel>Raza *</IonLabel>
+          {Raza}
+        </IonItem>
 
-            <IonModal isOpen={mostrarModal} onDidDismiss={handleCerrarModal}>
-              <IonHeader>
-                <IonToolbar>
-                  <IonTitle>Seleccionar Raza</IonTitle>
-                </IonToolbar>
-              </IonHeader>
-              <IonContent>
-                <IonSearchbar onIonChange={handleBuscarRaza} />
-                {/* Lista de razas filtradas */}
-                {filtroRazas.map((opcion, index) => (
-                  <IonItem key={index} button onClick={() => handleSeleccionarRaza(opcion)}>
-                    <IonLabel>{opcion}</IonLabel>
-                  </IonItem>
-                ))}
-              </IonContent>
-              <IonFooter>
-                <IonToolbar>
-                  <IonButton expand="full" onClick={handleCerrarModal}>
-                    Cancelar
-                  </IonButton>
-                </IonToolbar>
-              </IonFooter>
+        <IonItem className={`${colorError ? 'error' : ''}`}>
+          <IonLabel>Color *</IonLabel>
+          <IonSelect placeholder="Seleccione un color" multiple={true} onIonChange={(e) => setColor(e.detail.value!)}  value={Color}>
+            <IonSelectOption value="Blanco">Blanco</IonSelectOption>
+            <IonSelectOption value="Negro">Negro</IonSelectOption>
+            <IonSelectOption value="Gris">Gris</IonSelectOption>
+            <IonSelectOption value="Marron">Marrón</IonSelectOption>
+            <IonSelectOption value="Naranja">Naranja</IonSelectOption>
+            <IonSelectOption value="Amarillo">Amarillo</IonSelectOption>
+            <IonSelectOption value="Atigrado">Atigrado</IonSelectOption>
+            <IonSelectOption value="Manchado">Manchado</IonSelectOption>
+            <IonSelectOption value="Rojo">Rojo</IonSelectOption>
+            <IonSelectOption value="Azul">Azul</IonSelectOption>
+            <IonSelectOption value="Verde">Verde</IonSelectOption>
+          </IonSelect>
+        </IonItem>
+
+        <IonItem>
+          <IonTextarea value={Descripcion} onIonChange={(e) => setDescripcion(e.detail.value!)} autoGrow={true} label="Descripción" label-placement="floating" placeholder="Introduzca una descripción"></IonTextarea>
+        </IonItem>
+
+        <IonItem>
+          <IonItem>
+            <input type="file" accept="image/*" onChange={handleFileChange} />
+          </IonItem>
+        </IonItem>
+
+          <IonModal isOpen={mostrarModal} onDidDismiss={handleCerrarModal}>
+            <IonHeader>
+              <IonToolbar>
+                <IonTitle>Seleccionar Raza</IonTitle>
+              </IonToolbar>
+            </IonHeader>
+            <IonContent>
+              <IonSearchbar onIonChange={handleBuscarRaza} />
+              {/* Lista de razas filtradas */}
+              {filtroRazas.map((opcion, index) => (
+                <IonItem key={index} button onClick={() => handleSeleccionarRaza(opcion)}>
+                  <IonLabel>{opcion}</IonLabel>
+                </IonItem>
+              ))}
+            </IonContent>
+            <IonFooter>
+              <IonToolbar>
+                <IonButton expand="full" onClick={handleCerrarModal}>
+                  Cancelar
+                </IonButton>
+              </IonToolbar>
+            </IonFooter>
           </IonModal>
 
-          </form>
-
+        </form>
       </IonContent>
     </IonPage>
   );

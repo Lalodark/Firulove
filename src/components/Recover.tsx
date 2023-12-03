@@ -1,7 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom'
-
-
 
 import { IonContent, IonPage, useIonToast, IonImg, IonLabel, IonInput, IonItem, IonButton, IonText  } from '@ionic/react';
 import { alertCircleOutline } from 'ionicons/icons';
@@ -15,9 +12,9 @@ import letra from  '../images/logoletras.png'
 
 const Recover: React.FC = () => {
     
-    const history = useHistory();
     const [present] = useIonToast();
     const [email, setEmail] = useState<string>('');
+    const [emailError, setEmailError] = useState(false);
     const [msgerror, setMsgError] = useState<string>('')
 
     const presentToast = () => {
@@ -42,6 +39,8 @@ const Recover: React.FC = () => {
 
     const sendMail = async (e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        setEmailError(false);
+
         if(email != '')
         {
           try{
@@ -50,13 +49,15 @@ const Recover: React.FC = () => {
           }
           catch{
             setMsgError('El mail ingresado no es válido.')
-            presentToast()
+            presentToast();
+            setEmailError(true);
           }
         }
         else
         {
           setMsgError('Por favor complete todos los campos para continuar.')
-          presentToast()
+          presentToast();
+          setEmailError(true);
         }
         
     }
@@ -84,8 +85,8 @@ const Recover: React.FC = () => {
                     Recuperar Contraseña
                 </h1>
             </IonText>
-              <IonItem className='loginput'>
-                <IonLabel position="floating">Email *</IonLabel>
+              <IonItem className={`loginput ${emailError ? 'error' : ''}`}>
+                <IonLabel position="floating">Email</IonLabel>
                 <IonInput type="email" onIonChange={(e) => setEmail(e.detail.value!)} />
               </IonItem>
             </div>

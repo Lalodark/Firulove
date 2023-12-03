@@ -6,7 +6,7 @@ IonItem, IonInput, IonFooter, IonAvatar, IonImg, IonAlert, useIonViewWillEnter, 
 import { chevronBackOutline, flagOutline } from 'ionicons/icons';
 
 import { auth, store } from '../firebase'
-import { collection, query, where, getDocs, deleteDoc, doc, Timestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, deleteDoc, doc, Timestamp, onSnapshot } from "firebase/firestore";
 
 import uniqid from 'uniqid';
 
@@ -36,6 +36,7 @@ const Chat_Personal: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [mensajeEnviar, setMensajeEnviar] = useState('')
   const [isOpen, setIsOpen] = useState(false);
+  const [flag, setFlag] = useState<number>(0);
   const [datosMascota, setDatosMascota] = useState({
     idmascota:'',
     nombre:'',
@@ -173,18 +174,41 @@ const Chat_Personal: React.FC = () => {
   }
 
   useIonViewWillEnter (() => {
-    const searchParams = new URLSearchParams(location.search);
-    const chat = searchParams.get('idchat');
-    const pet = searchParams.get('mascotaid');
-    setChatId(chat);
-    setPetId(pet);
-    
-    authUser(chat, pet);
-    
+    console.log("e")
   })
 
   useEffect(() => {
-    console.log("e")
+    if(flag == 0)
+    {
+      const searchParams = new URLSearchParams(location.search);
+      const chat = searchParams.get('idchat');
+      const pet = searchParams.get('mascotaid');
+      setChatId(chat);
+      setPetId(pet);
+      
+      authUser(chat, pet);
+      setFlag(1)
+    }
+    else
+    {
+      const searchParams = new URLSearchParams(location.search);
+      const chat = searchParams.get('idchat');
+      const chatscol = collection(store, 'chats')
+      const chatshow = query(chatscol, where("chatid", "==", chat))
+  
+      // Suscribirse a cambios en el chat específico
+      const unsubscribe = onSnapshot(chatshow, (snapshot) => {
+        if (!snapshot.empty) {
+          const chatData = snapshot.docs[0].data();
+          const chatMessages = chatData.messages || [];
+          setMensajes(chatMessages);
+        }
+      });
+
+      // Devolver una función de limpieza para desuscribirse cuando el componente se desmonta
+      return () => unsubscribe();
+      
+    }
   }, []);
 
 

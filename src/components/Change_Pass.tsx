@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom'
 
-import { setTimeout } from 'timers';
-
 import { IonContent, IonPage, useIonToast, IonImg, IonItem, IonLabel, IonInput, IonButton } from '@ionic/react';
 import { alertCircleOutline } from 'ionicons/icons';
 
@@ -19,6 +17,9 @@ const Change_Pass: React.FC = () => {
     const [present] = useIonToast();
     const [pass, setPass] = useState<string>('')
     const [rpass, setRpass] = useState<string>('')
+
+    const [passwordError, setPasswordError] = useState(false);
+    const [rpasswordError, setRpasswordError] = useState(false);
     const [msgerror, setMsgError] = useState<string>('')
 
     const presentToast = () => {
@@ -39,11 +40,15 @@ const Change_Pass: React.FC = () => {
         icon: alertCircleOutline,
         color: 'success'
       });
-  };
+    };
 
     const cambiarContraseña = async (e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
+        setPasswordError(false);
+        setRpasswordError(false);
+
         const actionCode = new URLSearchParams(window.location.search).get('oobCode');
+
         if(pass != '' && rpass != '' && pass == rpass)
         {
           try {
@@ -59,17 +64,29 @@ const Change_Pass: React.FC = () => {
           } catch {
             setMsgError('La contraseña debe tener 6 carácteres o más.')
             presentToast()
+            setRpasswordError(true);
+            setPasswordError(true);
           }
         }
         else if (pass == '' || rpass == '') 
         {
           setMsgError('Por favor complete todos los campos para continuar.')
           presentToast()
+          if(rpass == '')
+          {
+            setRpasswordError(true);
+          }
+          if(pass == '')
+          {
+            setPasswordError(true);
+          }
         }
         else if (pass != rpass)
         {
           setMsgError('Las contraseñas ingresadas no coinciden.')
           presentToast()
+          setPasswordError(true);
+          setRpasswordError(true);
         }
     }
 
@@ -91,12 +108,12 @@ const Change_Pass: React.FC = () => {
           </div>
           <form className='form' onSubmit={cambiarContraseña}>
             <div className='container con-input'>
-              <IonItem className='loginput'>
-                <IonLabel position="floating">Contraseña *</IonLabel>
+              <IonItem className={`loginput ${passwordError ? 'error' : ''}`}>
+                <IonLabel position="floating">Contraseña</IonLabel>
                 <IonInput type="password" onIonChange={(e) => setPass(e.detail.value!)} />
               </IonItem>
-              <IonItem className='loginput'>
-                <IonLabel position="floating">Repetir Contraseña *</IonLabel>
+              <IonItem className={`loginput ${rpasswordError ? 'error' : ''}`}>
+                <IonLabel position="floating">Repetir Contraseña</IonLabel>
                 <IonInput type="password" onIonChange={(e) => setRpass(e.detail.value!)} />
               </IonItem>
             </div>

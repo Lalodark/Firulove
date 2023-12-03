@@ -203,26 +203,34 @@ const Chats: React.FC = () => {
         const {messages} = datoschat
 
         const maschat = collection(store, 'mascotas')
-        const petshow = query(maschat, where("idmascota", "==", idmascota))
+        const petshow = query(maschat, where("idmascota", "==", idmascota),
+        where("disponible", "==", 1))
         const querySnapshotsm = await getDocs(petshow)
         const datosMascota = querySnapshotsm.docs[0]
-        const datam = datosMascota.data()
-        const {imagenUrl} = datam;
-
-        if(!mascotasAgregadas.has(idmascota))
+        if(datosMascota)
         {
-          if(messages.length > 0)
-          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:messages[messages.length -1].content, leido: messages[messages.length -1].isread, ultimosender:messages[messages.length -1].senderId, idultimomsg:messages[messages.length -1].messageId, timestamp:messages[messages.length -1].timestamp, imagenUrl:imagenUrl})
-          else
-          mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:'', imagenUrl:''})
+          const datam = datosMascota.data()
+          const {imagenUrl} = datam;
+
+          if(!mascotasAgregadas.has(idmascota))
+          {
+            if(messages.length > 0)
+            mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:messages[messages.length -1].content, leido: messages[messages.length -1].isread, ultimosender:messages[messages.length -1].senderId, idultimomsg:messages[messages.length -1].messageId, timestamp:messages[messages.length -1].timestamp, imagenUrl:imagenUrl})
+            else
+            mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:'', imagenUrl:''})
+          }
+          mascotasAgregadas.add(idmascota);
         }
-        mascotasAgregadas.add(idmascota);
       })
 
 
       setTimeout(() => {
         mascotasFiltradasNuevas.sort((a, b) => compararPorTimestamp(a, b));
         setMascotasMensajes(mascotasFiltradasNuevas);
+        if(mascotasFiltradasNuevas.length == 0)
+        {
+          setHayMascotas(false)    
+        }
       }, 3500)
     }
     else{
