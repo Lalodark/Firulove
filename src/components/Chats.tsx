@@ -99,6 +99,13 @@ const Chats: React.FC = () => {
     return new Intl.DateTimeFormat('es-ES', options).format(date);
   }
 
+  function formatDaystamp(timestamp: any) {
+    const date = new Date(timestamp.seconds * 1000);
+    const options = { day: 'numeric', month: 'numeric' } as Intl.DateTimeFormatOptions;
+  
+    return new Intl.DateTimeFormat('es-ES', options).format(date);
+  }
+
   // Función para comparar dos objetos por su timestamp
   function compararPorTimestamp(a:any, b:any) {
     // Si el timestamp es una cadena vacía, colócalos al principio
@@ -238,6 +245,25 @@ const Chats: React.FC = () => {
     }
   }
 
+  const calcularFecha = (chatDay:any) => {
+    const fechaActual = new Date();
+    const fechaAnterior = new Date(chatDay.toMillis());
+
+    const diaActual = fechaActual.getDate();
+    const mesActual = fechaActual.getMonth() + 1;
+    const anioActual = fechaActual.getFullYear();
+    
+    const diaAnterior = fechaAnterior.getDate();
+    const mesAnterior = fechaAnterior.getMonth() + 1;
+    const anioAnterior = fechaAnterior.getFullYear();
+    
+    if (anioActual === anioAnterior && mesActual === mesAnterior && diaActual === diaAnterior) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   useIonViewWillEnter (() => {
     authUser();
   })
@@ -286,11 +312,25 @@ const Chats: React.FC = () => {
                           {
                             character.ultimosender === datosUsuario.activepet ?
                             (
-                              <p>Tú: {character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatTimestamp(character.timestamp):''}</span></p>
+                              calcularFecha(character.timestamp) ? 
+                              (
+                                <p>Tú: {character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatTimestamp(character.timestamp):''}</span></p>
+                              )
+                              :
+                              (
+                                <p>Tú: {character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatDaystamp(character.timestamp):''}</span></p>
+                              )
                             )
                             :
                             (
-                              <p>{character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatTimestamp(character.timestamp):''}</span></p>
+                              calcularFecha(character.timestamp) ? 
+                              (
+                                <p>{character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatTimestamp(character.timestamp):''}</span></p>
+                              )
+                              :
+                              (
+                                <p>{character.ultimomensaje} <span className="timestamp">{character.timestamp ? formatDaystamp(character.timestamp):''}</span></p>
+                              )
                             )
                           }
                         </div>

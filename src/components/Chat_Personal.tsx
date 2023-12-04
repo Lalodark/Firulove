@@ -111,6 +111,14 @@ const Chat_Personal: React.FC = () => {
     return new Intl.DateTimeFormat('es-ES', options).format(date);
   }
 
+  function formatDaystamp(timestamp: any) {
+    const date = new Date(timestamp.seconds * 1000);
+    const options = { day: 'numeric', month: 'numeric' } as Intl.DateTimeFormatOptions;
+  
+    return new Intl.DateTimeFormat('es-ES', options).format(date);
+  }
+
+  
   const authUser = (chat:any, pet:any) =>{
     auth.onAuthStateChanged(async (usuarioActual) => {
       if (usuarioActual) {
@@ -170,6 +178,25 @@ const Chat_Personal: React.FC = () => {
       setDatosMascota({idmascota, nombre, imagenUrl})
       setHayMensajes(false)
       setIsLoading(false)
+    }
+  }
+
+  const calcularFecha = (chatDay:any) => {
+    const fechaActual = new Date();
+    const fechaAnterior = new Date(chatDay.toMillis());
+
+    const diaActual = fechaActual.getDate();
+    const mesActual = fechaActual.getMonth() + 1;
+    const anioActual = fechaActual.getFullYear();
+    
+    const diaAnterior = fechaAnterior.getDate();
+    const mesAnterior = fechaAnterior.getMonth() + 1;
+    const anioAnterior = fechaAnterior.getFullYear();
+    
+    if (anioActual === anioAnterior && mesActual === mesAnterior && diaActual === diaAnterior) {
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -271,7 +298,16 @@ const Chat_Personal: React.FC = () => {
             mensajes.map((mensaje) => (
               <IonItem key={mensaje.messageId} className={activePet === mensaje.senderId ? 'chat-message sent':'chat-message received'}>
               <div className="message-content">{mensaje.content}</div>
-              <span className={activePet === mensaje.senderId ? 'timestamp timesent':'timestamp'}>{formatTimestamp(mensaje.timestamp)}</span>
+              {
+                calcularFecha(mensaje.timestamp) ? 
+                (
+                  <span className={activePet === mensaje.senderId ? 'timestamp timesent':'timestamp'}>{formatTimestamp(mensaje.timestamp)}</span>
+                )
+                :
+                (
+                  <span className={activePet === mensaje.senderId ? 'timestamp timesent':'timestamp'}>{formatTimestamp(mensaje.timestamp)} {formatDaystamp(mensaje.timestamp)}</span>
+                )
+              }
             </IonItem>
             ))
           }
