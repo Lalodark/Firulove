@@ -48,16 +48,16 @@ const Recover: React.FC = () => {
             presentSuccessToast()
           }
           catch{
-            setMsgError('El mail ingresado no es válido.')
-            presentToast();
+            setMsgError('El email ingresado no es válido.')
             setEmailError(true);
+            presentToast();
           }
         }
         else
         {
           setMsgError('Por favor complete todos los campos para continuar.')
-          presentToast();
           setEmailError(true);
+          presentToast();
         }
         
     }

@@ -70,7 +70,6 @@ const Login: React.FC = () => {
     else
     {
       setMsgError('Por favor complete todos los campos para continuar.');
-      presentToast()
       if(pass == '')
       {
         setPasswordError(true);
@@ -79,6 +78,7 @@ const Login: React.FC = () => {
       {
         setEmailError(true);
       }
+      presentToast()
     }
     
   }

@@ -121,28 +121,27 @@ const Register: React.FC = () => {
         console.log(error)
         if(error.code == 'auth/invalid-email'){
           setMsgError('Formato de Email Inválido.')
-          presentToast()
           setEmailError(true);
+          presentToast()
         }
         if(error.code == 'auth/weak-password')
         {
           setMsgError('La contraseña debe tener 6 carácteres o más.')
-          presentToast()
           setRpasswordError(true);
           setPasswordError(true);
+          presentToast()
         }
         if(error.code == 'auth/email-already-in-use')
         {
           setMsgError('El Email ingresado ya se encuentra en uso.')
-          presentToast()
           setEmailError(true);
+          presentToast()
         }
       }
     }
     else if (nombre == '' || apellido == '' || fecha == '' || email == '' || pass == '' || rpass == '') 
     {
       setMsgError('Por favor complete todos los campos para continuar.')
-      presentToast()
       if(rpass == '')
       {
         setRpasswordError(true);
@@ -167,18 +166,19 @@ const Register: React.FC = () => {
       {
         setNombreError(true);
       }
+      presentToast()
     }
     else if (pass != rpass)
     {
       setMsgError('Las contraseñas ingresadas no coinciden.')
-      presentToast();
       setRpasswordError(true);
       setPasswordError(true);
+      presentToast();
     }
     else {
       setMsgError('Debes ser mayor de edad para continuar.')
-      presentToast();
       setFechaError(true);
+      presentToast();
     }
   }
 

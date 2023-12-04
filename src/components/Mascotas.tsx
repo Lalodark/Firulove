@@ -140,14 +140,15 @@ const Mascotas: React.FC = () => {
           await deleteDoc(doc(store, 'mascotas', docs.id));
         }
 
-      const pet = query(mascotass, where("idusuario", "==", userid))
-      const querySnapshots1 = await getDocs(pet)
-        if(!querySnapshots1.empty)
-        {
-          const docs = querySnapshots1.docs;
-          const arraypets = docs.map(item => (item.data()));
-          setArrayMascotas(arraypets);
-        }
+        location.reload()
+      // const pet = query(mascotass, where("idusuario", "==", userid))
+      // const querySnapshots1 = await getDocs(pet)
+      //   if(!querySnapshots1.empty)
+      //   {
+      //     const docs = querySnapshots1.docs;
+      //     const arraypets = docs.map(item => (item.data()));
+      //     setArrayMascotas(arraypets);
+      //   }
     }
     catch(error:any){
       console.log("No se pudo borrar la mascota", error);

@@ -63,15 +63,14 @@ const Change_Pass: React.FC = () => {
             }
           } catch {
             setMsgError('La contraseña debe tener 6 carácteres o más.')
-            presentToast()
             setRpasswordError(true);
             setPasswordError(true);
+            presentToast()
           }
         }
         else if (pass == '' || rpass == '') 
         {
           setMsgError('Por favor complete todos los campos para continuar.')
-          presentToast()
           if(rpass == '')
           {
             setRpasswordError(true);
@@ -80,13 +79,14 @@ const Change_Pass: React.FC = () => {
           {
             setPasswordError(true);
           }
+          presentToast()
         }
         else if (pass != rpass)
         {
           setMsgError('Las contraseñas ingresadas no coinciden.')
-          presentToast()
           setPasswordError(true);
           setRpasswordError(true);
+          presentToast()
         }
     }
 
