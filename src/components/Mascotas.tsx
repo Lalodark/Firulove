@@ -97,7 +97,13 @@ const Mascotas: React.FC = () => {
           const querySnapshots = await getDocs(user)
           if (!querySnapshots.empty) {
               const doc = querySnapshots.docs[0];
-              await await store.collection('usuarios').doc(doc.id).update({'activepet': nuevoac })
+              await store.collection('usuarios').doc(doc.id).update({'activepet': nuevoac })
+
+              const pet = query(cambioac, where("idmascota", "==", nuevoac))
+              const querySnapshotsl = await getDocs(pet)
+              const docl = querySnapshotsl.docs[0]
+          
+              await store.collection('mascotas').doc(docl.id).update({'disponible': 1})
           }}})
 
       const filtross = collection(store, 'filtros')

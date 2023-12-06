@@ -734,7 +734,16 @@ const Menu: React.FC = () => {
                 <IonCard key={mascotasFiltradas[currentPetIndex].nombre} className={`cards`}>
                   <IonCardHeader>
                     <IonCardTitle>{mascotasFiltradas[currentPetIndex].nombre}, {mascotasFiltradas[currentPetIndex].edad} años</IonCardTitle>
-                    <IonCardSubtitle>{mascotasFiltradas[currentPetIndex].distancia} Km</IonCardSubtitle>
+                    {
+                      mascotasFiltradas[currentPetIndex].distancia < 1 ? 
+                      (
+                        <IonCardSubtitle>A menos de 1 Km de distancia</IonCardSubtitle>
+                      )
+                      :
+                      (
+                        <IonCardSubtitle>{mascotasFiltradas[currentPetIndex].distancia} Km</IonCardSubtitle>
+                      )
+                    }
                   </IonCardHeader>
                   <IonCardContent>
                     <div>

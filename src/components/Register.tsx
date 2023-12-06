@@ -213,7 +213,7 @@ const Register: React.FC = () => {
           <IonItem className={`loginput ${fechaError ? 'error' : ''}`}>
             <IonLabel position="floating">Fecha de Nacimiento <IonText color="danger">*</IonText></IonLabel>
             <IonInput id="date" value={formatDate(fecha)}>
-              <IonPopover trigger='date'>
+              <IonPopover trigger='date' size='cover'>
                 <IonDatetime presentation="date" showDefaultButtons={true} onIonChange={handleFechaChange} ></IonDatetime>
               </IonPopover>
             </IonInput>
