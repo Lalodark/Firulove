@@ -224,7 +224,7 @@ const Chats: React.FC = () => {
             if(messages.length > 0)
             mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:messages[messages.length -1].content, leido: messages[messages.length -1].isread, ultimosender:messages[messages.length -1].senderId, idultimomsg:messages[messages.length -1].messageId, timestamp:messages[messages.length -1].timestamp, imagenUrl:imagenUrl})
             else
-            mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:'', imagenUrl:''})
+            mascotasFiltradasNuevas.push({ ...mascotachat, id:idmascota, nombre:nombre, idchat:idchat, ultimomensaje:'', leido: 2, ultimosender:'', idultimomsg:'', timestamp:'', imagenUrl:imagenUrl})
           }
           mascotasAgregadas.add(idmascota);
         }
