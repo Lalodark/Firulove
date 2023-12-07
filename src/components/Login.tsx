@@ -23,6 +23,7 @@ const Login: React.FC = () => {
   const [emailError, setEmailError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
   const[msgerror, setMsgError] = useState<string>('')
+  let msg = ''
   
   //Funciones
 
@@ -37,6 +38,7 @@ const Login: React.FC = () => {
       try {
         await auth.signInWithEmailAndPassword(email, pass);
         setMsgError('')
+        msg = ''
         const usuarioss = collection(store,'usuarios')
         const user = query(usuarioss, where("email", "==", email))
         const querySnapshots = await getDocs(user)
@@ -56,20 +58,23 @@ const Login: React.FC = () => {
           }
       } catch (error:any) {
         if (error.code === 'auth/wrong-password' ) { 
-          setMsgError('El password ingresado no es correcto.');
+          //setMsgError('El password ingresado no es correcto.');
+          msg = 'El password ingresado no es correcto.'
           setPasswordError(true);
-          presentToast()
+          presentToast(msg)
         }
         if (error.code === 'auth/user-not-found' ) { 
-          setMsgError('No se ha encontrado el email ingresado.');
+          //setMsgError('No se ha encontrado el email ingresado.');
+          msg = 'No se ha encontrado el email ingresado.'
           setEmailError(true);
-          presentToast()
+          presentToast(msg)
         }
       }
     }
     else
     {
-      setMsgError('Por favor complete todos los campos para continuar.');
+      //setMsgError('Por favor complete todos los campos para continuar.');
+      msg = 'Por favor complete todos los campos para continuar.'
       if(pass == '')
       {
         setPasswordError(true);
@@ -78,12 +83,12 @@ const Login: React.FC = () => {
       {
         setEmailError(true);
       }
-      presentToast()
+      presentToast(msg)
     }
     
   }
 
-  const presentToast = () => {
+  const presentToast = (msgerror:string) => {
     present({
       message: msgerror,
       duration: 1500,
@@ -94,10 +99,11 @@ const Login: React.FC = () => {
   };
 
   useEffect(() => {
-    if(msgerror != '')
-    {
-      presentToast()
-    }
+    // if(msgerror != '')
+    // {
+    //   presentToast()
+    // }
+    console.log('e')
   }, [msgerror])
 
   return (

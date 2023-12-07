@@ -205,8 +205,6 @@ const Chat_Personal: React.FC = () => {
   })
 
   useEffect(() => {
-    if(flag == 0)
-    {
       const searchParams = new URLSearchParams(location.search);
       const chat = searchParams.get('idchat');
       const pet = searchParams.get('mascotaid');
@@ -214,14 +212,11 @@ const Chat_Personal: React.FC = () => {
       setPetId(pet);
       
       authUser(chat, pet);
-      setFlag(1)
-    }
-    else
-    {
-      const searchParams = new URLSearchParams(location.search);
-      const chat = searchParams.get('idchat');
+
+      const searchParams1 = new URLSearchParams(location.search);
+      const chat1 = searchParams1.get('idchat');
       const chatscol = collection(store, 'chats')
-      const chatshow = query(chatscol, where("chatid", "==", chat))
+      const chatshow = query(chatscol, where("chatid", "==", chat1))
   
       // Suscribirse a cambios en el chat específico
       const unsubscribe = onSnapshot(chatshow, (snapshot) => {
@@ -235,7 +230,7 @@ const Chat_Personal: React.FC = () => {
       // Devolver una función de limpieza para desuscribirse cuando el componente se desmonta
       return () => unsubscribe();
       
-    }
+    
   }, []);
 
 

@@ -87,7 +87,7 @@ const Mascotas_CE: React.FC = () => {
   const [razaError, setRazaError] = useState(false);
   const [colorError, setColorError] = useState(false);
   const[msgerror, setMsgError] = useState<string>('')
-  
+  let msg = ''
 
   //Funciones
 
@@ -95,7 +95,7 @@ const Mascotas_CE: React.FC = () => {
     window.history.back()
   }
 
-  const presentToast = () => {
+  const presentToast = (msgerror:string) => {
     present({
       message: msgerror,
       duration: 1500,
@@ -147,6 +147,7 @@ const Mascotas_CE: React.FC = () => {
         }
       }
 
+      msg = ''
       const editmascota = {
         idmascota: editpetid,
         idusuario: userID,
@@ -174,9 +175,11 @@ const Mascotas_CE: React.FC = () => {
         console.log(e)
       }
       history.push('/mascotas')
+      location.reload()
     }
     else{
-      setMsgError('Por favor complete todos los campos para continuar.')
+      //setMsgError('Por favor complete todos los campos para continuar.')
+      msg = 'Por favor complete todos los campos para continuar.'
       if(Color.length <= 0)
       {
         setColorError(true);
@@ -201,7 +204,7 @@ const Mascotas_CE: React.FC = () => {
       {
         setNombreError(true);
       }
-      presentToast()
+      presentToast(msg)
     }
     
   }
@@ -339,7 +342,8 @@ const Mascotas_CE: React.FC = () => {
       }
     }
     else{
-      setMsgError('Por favor complete todos los campos para continuar.')
+      //setMsgError('Por favor complete todos los campos para continuar.')
+      msg = 'Por favor complete todos los campos para continuar.'
       if(Color.length <= 0)
       {
         setColorError(true);
@@ -364,7 +368,7 @@ const Mascotas_CE: React.FC = () => {
       {
         setNombreError(true);
       }
-      presentToast()
+      presentToast(msg)
     }
   }
 
@@ -423,10 +427,11 @@ const Mascotas_CE: React.FC = () => {
   })
 
   useEffect(() => {
-    if(msgerror != '')
-    {
-      presentToast()
-    }
+    // if(msgerror != '')
+    // {
+    //   presentToast()
+    // }
+    console.log('e')
   }, [location.search, msgerror]);
 
   return (

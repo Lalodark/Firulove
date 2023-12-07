@@ -33,6 +33,7 @@ const Register: React.FC = () => {
   const [passwordError, setPasswordError] = useState(false);
   const [rpasswordError, setRpasswordError] = useState(false);
   const[msgerror, setMsgError] = useState<string>('')
+  let msg = ''
   const dia = Timestamp.now()
   //Funciones
 
@@ -75,7 +76,7 @@ const Register: React.FC = () => {
     return '';
   }
 
-  const presentToast = () => {
+  const presentToast = (msgerror:string) => {
     present({
       message: msgerror,
       duration: 1500,
@@ -106,11 +107,12 @@ const Register: React.FC = () => {
           email:email,
           activepet:'',
           dayLikes: dia,
-          likes: 15
+          likes: 10
         }
         try{
           await store.collection('usuarios').add(usuario)
           setMsgError('')
+          msg = ''
           history.push('/welcome')
         }
         catch(e){
@@ -120,28 +122,32 @@ const Register: React.FC = () => {
       catch(error:any){
         console.log(error)
         if(error.code == 'auth/invalid-email'){
-          setMsgError('Formato de Email Inválido.')
+          //setMsgError('Formato de Email Inválido.')
+          msg = 'Formato de Email Inválido.'
           setEmailError(true);
-          presentToast()
+          presentToast(msg)
         }
         if(error.code == 'auth/weak-password')
         {
-          setMsgError('La contraseña debe tener 6 carácteres o más.')
+          //setMsgError('La contraseña debe tener 6 carácteres o más.')
+          msg = 'La contraseña debe tener 6 carácteres o más.'
           setRpasswordError(true);
           setPasswordError(true);
-          presentToast()
+          presentToast(msg)
         }
         if(error.code == 'auth/email-already-in-use')
         {
-          setMsgError('El Email ingresado ya se encuentra en uso.')
+          //setMsgError('El Email ingresado ya se encuentra en uso.')
+          msg = 'El Email ingresado ya se encuentra en uso.'
           setEmailError(true);
-          presentToast()
+          presentToast(msg)
         }
       }
     }
     else if (nombre == '' || apellido == '' || fecha == '' || email == '' || pass == '' || rpass == '') 
     {
-      setMsgError('Por favor complete todos los campos para continuar.')
+      //setMsgError('Por favor complete todos los campos para continuar.')
+      msg = 'Por favor complete todos los campos para continuar.'
       if(rpass == '')
       {
         setRpasswordError(true);
@@ -166,27 +172,30 @@ const Register: React.FC = () => {
       {
         setNombreError(true);
       }
-      presentToast()
+      presentToast(msg)
     }
     else if (pass != rpass)
     {
-      setMsgError('Las contraseñas ingresadas no coinciden.')
+      //setMsgError('Las contraseñas ingresadas no coinciden.')
+      msg = 'Las contraseñas ingresadas no coinciden.'
       setRpasswordError(true);
       setPasswordError(true);
-      presentToast();
+      presentToast(msg);
     }
     else {
-      setMsgError('Debes ser mayor de edad para continuar.')
+      //setMsgError('Debes ser mayor de edad para continuar.')
+      msg = 'Debes ser mayor de edad para continuar.'
       setFechaError(true);
-      presentToast();
+      presentToast(msg);
     }
   }
 
   useEffect(() => {
-    if(msgerror != '')
-    {
-      presentToast()
-    }
+    // if(msgerror != '')
+    // {
+    //   presentToast()
+    // }
+    console.log('e')
   }, [msgerror])
 
   return (

@@ -21,8 +21,9 @@ const Change_Pass: React.FC = () => {
     const [passwordError, setPasswordError] = useState(false);
     const [rpasswordError, setRpasswordError] = useState(false);
     const [msgerror, setMsgError] = useState<string>('')
+    let msg = ''
 
-    const presentToast = () => {
+    const presentToast = (msgerror:string) => {
         present({
           message: msgerror,
           duration: 1500,
@@ -56,21 +57,24 @@ const Change_Pass: React.FC = () => {
             {
               await confirmPasswordReset(auth, actionCode, pass);
               presentSuccessToast()
+              msg = ''
               await setTimeout(() => {
                 console.log("Redirigiendo al Login");
               }, 3000);
               history.push('/login')
             }
           } catch {
-            setMsgError('La contraseña debe tener 6 carácteres o más.')
+            //setMsgError('La contraseña debe tener 6 carácteres o más.')
+            msg = 'La contraseña debe tener 6 carácteres o más.'
             setRpasswordError(true);
             setPasswordError(true);
-            presentToast()
+            presentToast(msg)
           }
         }
         else if (pass == '' || rpass == '') 
         {
-          setMsgError('Por favor complete todos los campos para continuar.')
+          //setMsgError('Por favor complete todos los campos para continuar.')
+          msg = 'Por favor complete todos los campos para continuar.'
           if(rpass == '')
           {
             setRpasswordError(true);
@@ -79,22 +83,24 @@ const Change_Pass: React.FC = () => {
           {
             setPasswordError(true);
           }
-          presentToast()
+          presentToast(msg)
         }
         else if (pass != rpass)
         {
-          setMsgError('Las contraseñas ingresadas no coinciden.')
+          //setMsgError('Las contraseñas ingresadas no coinciden.')
+          msg = 'Las contraseñas ingresadas no coinciden.'
           setPasswordError(true);
           setRpasswordError(true);
-          presentToast()
+          presentToast(msg)
         }
     }
 
     useEffect(() => {
-        if(msgerror != '')
-        {
-          presentToast()
-        }
+        // if(msgerror != '')
+        // {
+        //   presentToast()
+        // }
+        console.log('e')
     }, [msgerror])
 
     return (

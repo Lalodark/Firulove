@@ -16,8 +16,9 @@ const Recover: React.FC = () => {
     const [email, setEmail] = useState<string>('');
     const [emailError, setEmailError] = useState(false);
     const [msgerror, setMsgError] = useState<string>('')
+    let msg = ''
 
-    const presentToast = () => {
+    const presentToast = (msgerror:string) => {
         present({
           message: msgerror,
           duration: 1500,
@@ -45,28 +46,32 @@ const Recover: React.FC = () => {
         {
           try{
             await sendPasswordResetEmail(auth, email);
+            msg = ''
             presentSuccessToast()
           }
           catch{
-            setMsgError('El email ingresado no es válido.')
+            //setMsgError('El email ingresado no es válido.')
+            msg = 'El email ingresado no es válido.'
             setEmailError(true);
-            presentToast();
+            presentToast(msg);
           }
         }
         else
         {
-          setMsgError('Por favor complete todos los campos para continuar.')
+          //setMsgError('Por favor complete todos los campos para continuar.')
+          msg = 'Por favor complete todos los campos para continuar.'
           setEmailError(true);
-          presentToast();
+          presentToast(msg);
         }
         
     }
 
     useEffect(() => {
-        if(msgerror != '')
-        {
-          presentToast()
-        }
+        // if(msgerror != '')
+        // {
+        //   presentToast()
+        // }
+        console.log('e')
     }, [msgerror])
 
     return (
